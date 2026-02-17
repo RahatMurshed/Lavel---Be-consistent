@@ -1,118 +1,105 @@
 
 
-# LEVEL -- Wiring Real Data + Core Feature Implementation
+# Premium UI Overhaul -- Modern Icons + Premium AI Product Feel
 
-## What's Already Built
-- Auth (login/signup), onboarding flow (identity + outcomes + AI habit generation)
-- Database: profiles, identities, habits, behavior_logs, daily_checkins, seasonal_modes (all with RLS)
-- Dashboard shell: 3-panel layout with mock data
-- Edge function: habit-generator (AI-powered)
-- Design system: dark premium theme, glass cards, glow effects
-
-## What This Plan Delivers
-Wire the dashboard to real data and implement the core behavioral engine features from the PRD. This is broken into 5 parts.
+## Overview
+Replace generic Lucide icons with premium alternatives across the entire app. Elevate the design system with refined gradients, micro-interactions, improved typography hierarchy, and polished glass-morphism effects to create a premium AI product experience.
 
 ---
 
-## Part 1: Live Dashboard Data
+## Icon Upgrades
 
-Replace all mock/static data in the dashboard with real queries.
+### Onboarding Identity Cards
+Replace plain emoji icons with premium styled emoji in gradient-backed containers:
+- Builder: Hammer icon in a violet gradient circle
+- Athlete: Dumbbell icon in a teal gradient circle
+- Reader: BookOpen icon in a blue gradient circle
+- Creator: Palette icon in a rose gradient circle
+- Leader: Crown icon in an amber gradient circle
+- Mindful: Leaf icon in an emerald gradient circle
 
-**Sidebar (AppSidebar)**
-- Fetch user's identities from database
-- Show each identity card with real alignment_pct and linked habit count
-- Dynamically render identity colors and labels
+Each identity card gets a gradient icon container with a soft glow, similar to the reference screenshot but more refined.
 
-**Center Panel (DashboardCenter)**
-- Fetch today's habits from database (active habits for current user)
-- Show Full/Min/Miss buttons that actually write to `behavior_logs`
-- After logging, update UI optimistically
-- Calculate real Consistency Score from behavior_logs (last 30 days)
-- Show real streak count (consecutive days with at least one completion)
-- Compute burnout risk from habit load + recent completion variance
-- Momentum Curve chart: query last 14 days of behavior_logs, compute daily completion %, render as Recharts line chart
+### Auth Page
+- Replace the generic Zap logo with a custom SVG sparkle/diamond mark with gradient fill
+- Add a subtle animated gradient ring around the logo
 
-**Right Panel (DashboardRight)**
-- Morning Check-in: save energy + mood to `daily_checkins` table, disable after submission for today
-- AI Mirror: fetch latest weekly report or show placeholder until enough data exists
-- Micro Challenge: generate from existing habits using a simple random selection (full AI micro-challenge generator comes later)
+### Dashboard Header
+- Replace Zap with the same premium brand mark
+- Upgrade LogOut icon styling
 
----
+### Sidebar Navigation
+- Replace generic icons with more distinctive ones:
+  - Dashboard: LayoutGrid (instead of LayoutDashboard)
+  - Habits: Flame (instead of Target)
+  - Analytics: TrendingUp (instead of BarChart3)
+  - Daily Plan: Compass (instead of Calendar)
+  - AI Mirror: Sparkles (instead of Brain)
 
-## Part 2: Friction Logging System
+### Dashboard Cards
+- Streak card: Replace Target with a custom flame/streak icon
+- Burnout Risk: Replace AlertTriangle with ShieldAlert
+- Morning Check-in: Replace Sun with Sunrise
+- AI Mirror: Replace Brain with BrainCircuit
+- Micro Challenge: Replace Sparkles with Rocket
 
-When user taps "Miss" on a habit:
-- Show a modal/dialog asking "What stopped you?"
-- Multi-select friction tags: Low energy, Time mismanagement, Forgot, Mood, Environment, Competing priority, Motivation
-- Optional notes field
-- Save to `behavior_logs` with status='miss', friction_trigger (comma-separated tags), and notes
-- Dashboard card: "Top Friction This Week" -- query this week's miss logs, aggregate friction tags, show distribution
-
----
-
-## Part 3: Consistency Score Engine
-
-Create a utility/hook that computes the 5-dimensional score from the PRD:
-
-```
-A = Completion Ratio (30%) = completed / expected
-B = Trend Stability (25%) = inverse of daily completion variance
-C = Recovery Speed (20%) = (7 - avg days to return after miss) / 7 * 100
-D = Resilience Index (15%) = completion rate on low-energy days (energy <= 4)
-E = Energy Alignment (10%) = completion % during peak energy hours
-```
-
-- Compute from last 30 days of behavior_logs + daily_checkins
-- Display as large circular gauge on dashboard (using a radial progress component)
-- Show breakdown with each component labeled
-- Color coding: Red (0-40), Yellow (40-70), Green (70-100)
+### Landing Page
+- Upgrade feature icons with gradient backgrounds in pill containers
+- Replace Zap logo with premium brand mark
 
 ---
 
-## Part 4: Adaptive Daily Planning
+## Design System Refinements
 
-Enhance the morning check-in flow:
-- When energy <= 3: auto-switch all habits to show "Minimum" version prominently, with "Full" as optional
-- When energy >= 7: show "Full" version prominently with encouragement text
-- Add visual badges on each habit card showing current mode (Full / Min)
-- Store the daily plan mode in daily_checkins
+### Glass Cards Enhancement
+- Increase backdrop blur to 16px
+- Add subtle inner border highlight (top-left light edge)
+- Slightly increase border opacity for better definition
 
----
+### Gradient Accents
+- Add a subtle gradient overlay to primary buttons (violet to blue shift)
+- Identity cards get a hover micro-glow animation
+- Stats cards get a colored top-border accent line (2px gradient)
 
-## Part 5: Database Updates
+### Typography Polish
+- Auth page title: increase to text-4xl with tighter letter spacing
+- Onboarding step titles: add gradient text effect on key words
+- Dashboard section headers: add a small colored dot before the title
 
-New migration to add:
-- `consistency_scores` table: user_id, score_date, overall_score, completion_ratio, trend_stability, recovery_speed, resilience_index, energy_alignment
-- `weekly_reports` table: user_id, week_start, report_content (JSONB), created_at
-- Add `emoji` column to `identities` table (for identity card display)
-- Add `stress_level` column to `daily_checkins` table (integer 1-10, nullable)
+### Button Upgrades
+- Primary buttons: gradient background (primary to slightly shifted hue)
+- Ghost buttons: add subtle border on hover
+- Habit action buttons (Full/Min/Miss): pill-shaped with icon prefix
+
+### Micro-interactions
+- Identity card selection: scale(1.02) + ring glow animation
+- Energy slider buttons: smooth color transition on hover
+- Habit log buttons: subtle bounce on click via framer-motion
 
 ---
 
 ## Technical Details
 
-### New/Modified Files
+### Modified Files
 
-| File | Action |
-|------|--------|
-| `src/hooks/useHabits.ts` | New -- fetch habits, identities, logs with React Query |
-| `src/hooks/useConsistencyScore.ts` | New -- compute 5-dimensional score |
-| `src/hooks/useDailyCheckin.ts` | New -- manage morning check-in state |
-| `src/components/dashboard/DashboardCenter.tsx` | Rewrite -- real data, habit logging, momentum chart |
-| `src/components/dashboard/DashboardRight.tsx` | Rewrite -- real check-in, AI mirror, micro-challenge |
-| `src/components/AppSidebar.tsx` | Rewrite -- real identities from DB |
-| `src/components/dashboard/FrictionModal.tsx` | New -- friction logging dialog |
-| `src/components/dashboard/ConsistencyGauge.tsx` | New -- circular score visualization |
-| `src/components/dashboard/MomentumChart.tsx` | New -- Recharts line chart |
-| `src/components/dashboard/FrictionSummary.tsx` | New -- top friction card |
-| Migration SQL | New -- consistency_scores, weekly_reports tables + identity emoji column |
+| File | Changes |
+|------|---------|
+| `src/pages/Onboarding.tsx` | Premium icon containers for identity cards, gradient text, refined card styles, better spacing |
+| `src/pages/Auth.tsx` | Premium brand mark SVG, enhanced card styling, gradient button |
+| `src/pages/Dashboard.tsx` | Premium brand mark in header, refined header styling |
+| `src/pages/Index.tsx` | Premium brand mark, gradient feature icon containers, hero text gradient |
+| `src/components/AppSidebar.tsx` | Updated nav icons, refined identity card styling |
+| `src/components/dashboard/DashboardCenter.tsx` | Updated stat card icons with gradient containers, refined habit cards, pill-shaped action buttons |
+| `src/components/dashboard/DashboardRight.tsx` | Updated card icons, refined energy slider, enhanced micro-challenge card |
+| `src/index.css` | New utility classes: `.gradient-text`, `.glass-card-premium`, `.icon-container`, `.btn-gradient` |
+| `src/components/ui/PremiumIcon.tsx` | New -- reusable gradient icon container component |
 
-### Data Flow
+### New Component: PremiumIcon
+A reusable wrapper that renders any Lucide icon inside a gradient-backed rounded container with configurable color themes (violet, teal, amber, rose, blue, emerald).
 
-1. User opens dashboard -> hooks fetch habits, identities, today's checkin, recent logs
-2. If no checkin today -> Morning Check-in prompt appears in right panel
-3. User submits energy/mood -> daily_checkins row created -> habits display adapts (full vs min mode)
-4. User taps Full/Min/Miss -> behavior_logs row created -> if Miss, friction modal opens
-5. Consistency score recomputes on each page load from last 30 days of logs
-6. Momentum chart shows last 14 days of daily completion percentages
+### CSS Additions
+- `.gradient-text`: `background: linear-gradient(...)` with `background-clip: text`
+- `.glass-card-premium`: enhanced glass card with inner highlight border
+- `.icon-container`: gradient circle/rounded-square for icon display
+- `.btn-gradient`: gradient primary button style
 
