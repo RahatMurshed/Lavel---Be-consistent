@@ -35,6 +35,7 @@ interface PremiumIconProps {
   theme?: ColorTheme;
   size?: "sm" | "md" | "lg";
   className?: string;
+  animated?: boolean;
 }
 
 const sizeMap = {
@@ -43,7 +44,7 @@ const sizeMap = {
   lg: { container: "h-12 w-12 rounded-xl", icon: "h-6 w-6" },
 };
 
-export function PremiumIcon({ icon: Icon, theme = "violet", size = "md", className }: PremiumIconProps) {
+export function PremiumIcon({ icon: Icon, theme = "violet", size = "md", className, animated = false }: PremiumIconProps) {
   const { bg, glow } = themeStyles[theme];
   const s = sizeMap[size];
 
@@ -54,6 +55,7 @@ export function PremiumIcon({ icon: Icon, theme = "violet", size = "md", classNa
         bg,
         glow,
         s.container,
+        animated && "animate-float",
         className
       )}
     >

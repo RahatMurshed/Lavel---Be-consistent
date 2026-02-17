@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
 
 const FRICTION_TAGS = [
   "Low energy",
@@ -38,7 +39,7 @@ export function FrictionModal({ open, onClose, onSubmit, habitName }: FrictionMo
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="glass-card border-border/50 sm:max-w-md">
+      <DialogContent className="glass-card-premium border-border/50 sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-display">What stopped you?</DialogTitle>
           <p className="text-sm text-muted-foreground">Missed: {habitName}</p>
@@ -46,14 +47,15 @@ export function FrictionModal({ open, onClose, onSubmit, habitName }: FrictionMo
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
             {FRICTION_TAGS.map((tag) => (
-              <Badge
-                key={tag}
-                variant={selected.includes(tag) ? "default" : "outline"}
-                className="cursor-pointer transition-colors"
-                onClick={() => toggle(tag)}
-              >
-                {tag}
-              </Badge>
+              <motion.div key={tag} whileTap={{ scale: 0.95 }}>
+                <Badge
+                  variant={selected.includes(tag) ? "default" : "outline"}
+                  className="cursor-pointer transition-all duration-200 hover:scale-105"
+                  onClick={() => toggle(tag)}
+                >
+                  {tag}
+                </Badge>
+              </motion.div>
             ))}
           </div>
           <Textarea
@@ -65,7 +67,7 @@ export function FrictionModal({ open, onClose, onSubmit, habitName }: FrictionMo
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Skip</Button>
-          <Button onClick={handleSubmit}>Log Friction</Button>
+          <Button onClick={handleSubmit} className="btn-gradient">Log Friction</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

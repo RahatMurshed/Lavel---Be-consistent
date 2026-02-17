@@ -1,5 +1,6 @@
 import { useWeekFriction } from "@/hooks/useHabits";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PremiumIcon } from "@/components/ui/PremiumIcon";
 import { AlertTriangle } from "lucide-react";
 
 export function FrictionSummary() {
@@ -10,20 +11,20 @@ export function FrictionSummary() {
   const max = friction[0]?.count || 1;
 
   return (
-    <Card className="glass-card border-chart-rose/20">
+    <Card className="glass-card-premium border-chart-rose/20">
       <CardHeader className="pb-2">
         <CardTitle className="font-display text-sm flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-chart-rose" />
+          <PremiumIcon icon={AlertTriangle} theme="rose" size="sm" />
           Top Friction This Week
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {friction.slice(0, 4).map((f) => (
-          <div key={f.tag} className="flex items-center gap-2 text-xs">
+        {friction.slice(0, 4).map((f, i) => (
+          <div key={f.tag} className="flex items-center gap-2 text-xs" style={{ animationDelay: `${i * 0.1}s` }}>
             <span className="text-muted-foreground w-28 truncate">{f.tag}</span>
             <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
               <div
-                className="h-full rounded-full bg-chart-rose/60 transition-all"
+                className="h-full rounded-full bg-chart-rose/60 transition-all duration-700"
                 style={{ width: `${(f.count / max) * 100}%` }}
               />
             </div>

@@ -21,6 +21,7 @@ export function BrandMark({ size = "md", className, animated = false }: BrandMar
         <div
           className={cn(
             "absolute rounded-2xl bg-gradient-to-r from-primary via-chart-blue to-primary opacity-30 blur-md animate-pulse-glow",
+            animated && "animate-gradient-shift",
             s.ring
           )}
         />
@@ -31,7 +32,7 @@ export function BrandMark({ size = "md", className, animated = false }: BrandMar
         viewBox="0 0 32 32"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="relative z-10"
+        className={cn("relative z-10", animated && "animate-float")}
       >
         <defs>
           <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -40,7 +41,6 @@ export function BrandMark({ size = "md", className, animated = false }: BrandMar
             <stop offset="100%" stopColor="hsl(172, 50%, 55%)" />
           </linearGradient>
         </defs>
-        {/* Diamond / sparkle mark */}
         <path
           d="M16 2L20.5 11.5L30 16L20.5 20.5L16 30L11.5 20.5L2 16L11.5 11.5L16 2Z"
           fill="url(#brandGrad)"

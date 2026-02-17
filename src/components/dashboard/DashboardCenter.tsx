@@ -50,6 +50,16 @@ function useBurnoutRisk() {
   }, [logs]);
 }
 
+const cardStagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.1 } },
+};
+
+const cardFade = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
+
 export function DashboardCenter() {
   const { data: habits, isLoading: habitsLoading } = useActiveHabits();
   const { data: todayLogs } = useTodayLogs();
@@ -95,41 +105,47 @@ export function DashboardCenter() {
   return (
     <main className="flex-1 overflow-y-auto p-6 space-y-6">
       {/* Stats Row */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="glass-card-premium glow-primary">
-          <CardContent className="p-4">
-            <ConsistencyGauge />
-          </CardContent>
-        </Card>
+      <motion.div initial="hidden" animate="show" variants={cardStagger} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <motion.div variants={cardFade}>
+          <Card className="glass-card-premium glow-primary">
+            <CardContent className="p-4">
+              <ConsistencyGauge />
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card className="glass-card-premium overflow-hidden">
-          <div className="h-0.5 bg-gradient-to-r from-chart-teal to-chart-emerald" />
-          <CardContent className="p-4 flex items-center gap-4">
-            <PremiumIcon icon={Flame} theme="teal" size="lg" />
-            <div>
-              <p className="text-2xl font-display font-bold text-foreground">{streak}</p>
-              <p className="text-xs text-muted-foreground">Day Streak</p>
-            </div>
-          </CardContent>
-        </Card>
+        <motion.div variants={cardFade}>
+          <Card className="glass-card-premium overflow-hidden hover-float">
+            <div className="h-0.5 bg-gradient-to-r from-chart-teal to-chart-emerald" />
+            <CardContent className="p-4 flex items-center gap-4">
+              <PremiumIcon icon={Flame} theme="teal" size="lg" animated />
+              <div>
+                <p className="text-2xl font-display font-bold text-foreground">{streak}</p>
+                <p className="text-xs text-muted-foreground">Day Streak</p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card className="glass-card-premium overflow-hidden">
-          <div className="h-0.5 bg-gradient-to-r from-chart-amber to-chart-rose" />
-          <CardContent className="p-4 flex items-center gap-4">
-            <PremiumIcon icon={ShieldAlert} theme="amber" size="lg" />
-            <div>
-              <p className={`text-2xl font-display font-bold ${burnoutColor}`}>{burnoutRisk}</p>
-              <p className="text-xs text-muted-foreground">Burnout Risk</p>
-            </div>
-          </CardContent>
-        </Card>
+        <motion.div variants={cardFade}>
+          <Card className="glass-card-premium overflow-hidden hover-float">
+            <div className="h-0.5 bg-gradient-to-r from-chart-amber to-chart-rose" />
+            <CardContent className="p-4 flex items-center gap-4">
+              <PremiumIcon icon={ShieldAlert} theme="amber" size="lg" />
+              <div>
+                <p className={`text-2xl font-display font-bold ${burnoutColor}`}>{burnoutRisk}</p>
+                <p className="text-xs text-muted-foreground">Burnout Risk</p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </motion.div>
 
       {/* Momentum Curve */}
       <Card className="glass-card-premium">
         <CardHeader>
           <CardTitle className="font-display text-lg flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-glow" />
             Momentum Curve
           </CardTitle>
         </CardHeader>
@@ -142,7 +158,7 @@ export function DashboardCenter() {
       <Card className="glass-card-premium">
         <CardHeader>
           <CardTitle className="font-display text-lg flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-glow" />
             Today's Habits
             {isLowEnergy && <span className="text-xs font-normal text-chart-amber bg-chart-amber/10 px-2 py-0.5 rounded-full ml-2">Low Energy Mode</span>}
             {isHighEnergy && <span className="text-xs font-normal text-success bg-success/10 px-2 py-0.5 rounded-full ml-2">Full Power</span>}
@@ -160,7 +176,7 @@ export function DashboardCenter() {
               return (
                 <div
                   key={habit.id}
-                  className={`flex items-center justify-between p-3 rounded-xl border transition-all duration-200 ${
+                  className={`flex items-center justify-between p-3 rounded-xl border transition-all duration-200 hover-float ${
                     logged
                       ? "bg-secondary/10 border-border/20 opacity-60"
                       : "bg-secondary/20 border-border/30 hover:border-primary/30 hover:bg-secondary/30"
