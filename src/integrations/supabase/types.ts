@@ -58,6 +58,45 @@ export type Database = {
           },
         ]
       }
+      consistency_scores: {
+        Row: {
+          completion_ratio: number
+          created_at: string
+          energy_alignment: number
+          id: string
+          overall_score: number
+          recovery_speed: number
+          resilience_index: number
+          score_date: string
+          trend_stability: number
+          user_id: string
+        }
+        Insert: {
+          completion_ratio?: number
+          created_at?: string
+          energy_alignment?: number
+          id?: string
+          overall_score?: number
+          recovery_speed?: number
+          resilience_index?: number
+          score_date?: string
+          trend_stability?: number
+          user_id: string
+        }
+        Update: {
+          completion_ratio?: number
+          created_at?: string
+          energy_alignment?: number
+          id?: string
+          overall_score?: number
+          recovery_speed?: number
+          resilience_index?: number
+          score_date?: string
+          trend_stability?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_checkins: {
         Row: {
           checkin_date: string
@@ -65,6 +104,7 @@ export type Database = {
           energy: number
           id: string
           mood: string | null
+          stress_level: number | null
           user_id: string
         }
         Insert: {
@@ -73,6 +113,7 @@ export type Database = {
           energy: number
           id?: string
           mood?: string | null
+          stress_level?: number | null
           user_id: string
         }
         Update: {
@@ -81,6 +122,7 @@ export type Database = {
           energy?: number
           id?: string
           mood?: string | null
+          stress_level?: number | null
           user_id?: string
         }
         Relationships: []
@@ -143,6 +185,7 @@ export type Database = {
           alignment_pct: number | null
           color: string | null
           created_at: string
+          emoji: string | null
           id: string
           label: string
           updated_at: string
@@ -152,6 +195,7 @@ export type Database = {
           alignment_pct?: number | null
           color?: string | null
           created_at?: string
+          emoji?: string | null
           id?: string
           label: string
           updated_at?: string
@@ -161,6 +205,7 @@ export type Database = {
           alignment_pct?: number | null
           color?: string | null
           created_at?: string
+          emoji?: string | null
           id?: string
           label?: string
           updated_at?: string
@@ -225,6 +270,30 @@ export type Database = {
           mode?: string
           started_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_reports: {
+        Row: {
+          created_at: string
+          id: string
+          report_content: Json
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          report_content?: Json
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          report_content?: Json
+          user_id?: string
+          week_start?: string
         }
         Relationships: []
       }
