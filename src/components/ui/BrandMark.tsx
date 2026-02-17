@@ -36,9 +36,9 @@ export function BrandMark({ size = "md", className, animated = false }: BrandMar
       >
         <defs>
           <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(258, 62%, 63%)" />
-            <stop offset="50%" stopColor="hsl(215, 70%, 62%)" />
-            <stop offset="100%" stopColor="hsl(172, 50%, 55%)" />
+            <stop offset="0%" stopColor="hsl(180, 65%, 48%)" />
+            <stop offset="50%" stopColor="hsl(200, 60%, 50%)" />
+            <stop offset="100%" stopColor="hsl(220, 65%, 58%)" />
           </linearGradient>
         </defs>
         <path
