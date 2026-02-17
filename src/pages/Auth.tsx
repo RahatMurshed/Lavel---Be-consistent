@@ -68,12 +68,7 @@ const Auth = () => {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse-glow" />
       <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-chart-teal/10 rounded-full blur-[100px] animate-pulse-glow" />
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md px-4"
-      >
+      <div className="w-full max-w-md px-4">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-3">
@@ -83,7 +78,7 @@ const Auth = () => {
           <p className="text-muted-foreground text-sm">Your Consistency Operating System</p>
         </div>
 
-        <Card className="glass-card-premium shimmer-border border-border/50">
+        <Card className="glass-card-premium border-border/50">
           <CardHeader className="text-center">
             <CardTitle className="font-display text-xl">
               {isLogin ? "Welcome back" : "Start your journey"}
@@ -172,7 +167,7 @@ const Auth = () => {
             </motion.p>
           </AnimatePresence>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
