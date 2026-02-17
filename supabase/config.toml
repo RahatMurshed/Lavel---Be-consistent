@@ -1,1 +1,4 @@
 project_id = "qwkpsmfjrhjwjrdrykwt"
+
+[functions.motivational-quote]
+verify_jwt = false
