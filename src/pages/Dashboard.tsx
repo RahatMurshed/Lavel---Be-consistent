@@ -11,6 +11,7 @@ import type { User } from "@supabase/supabase-js";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,9 +23,25 @@ const Dashboard = () => {
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) navigate("/auth");
-      else setUser(session.user);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+      setUser(session.user);
+
+      // Check onboarding status
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (!profile?.onboarding_completed) {
+        navigate("/onboarding");
+        return;
+      }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -35,14 +52,13 @@ const Dashboard = () => {
     navigate("/auth");
   };
 
-  if (!user) return null;
+  if (!user || loading) return null;
 
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
-          {/* Header */}
           <header className="h-14 flex items-center justify-between border-b border-border/50 px-4">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
@@ -60,8 +76,6 @@ const Dashboard = () => {
               </Button>
             </div>
           </header>
-
-          {/* Main content - two column */}
           <div className="flex-1 flex overflow-hidden">
             <DashboardCenter />
             <DashboardRight />
