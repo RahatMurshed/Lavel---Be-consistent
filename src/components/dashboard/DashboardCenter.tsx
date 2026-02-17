@@ -1,32 +1,104 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Flame, Target, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
+import { useActiveHabits, useTodayLogs, useLogHabit, useRecentLogs } from "@/hooks/useHabits";
+import { useConsistencyScore } from "@/hooks/useConsistencyScore";
+import { useTodayCheckin } from "@/hooks/useDailyCheckin";
+import { ConsistencyGauge } from "./ConsistencyGauge";
+import { MomentumChart } from "./MomentumChart";
+import { FrictionModal } from "./FrictionModal";
+import { FrictionSummary } from "./FrictionSummary";
+import { format, subDays, parseISO } from "date-fns";
+import { useMemo } from "react";
+import { toast } from "sonner";
 
-const mockHabits = [
-  { name: "Deep Work (2h)", identity: "Builder", status: "pending" },
-  { name: "Read 20 pages", identity: "Reader", status: "pending" },
-  { name: "Exercise 30min", identity: "Athlete", status: "pending" },
-];
+function useStreak() {
+  const { data: logs } = useRecentLogs(60);
+  return useMemo(() => {
+    if (!logs || logs.length === 0) return 0;
+    const completed = new Set(
+      logs.filter((l) => l.status === "full" || l.status === "min").map((l) => l.log_date)
+    );
+    let streak = 0;
+    for (let i = 0; i < 60; i++) {
+      const d = format(subDays(new Date(), i), "yyyy-MM-dd");
+      if (completed.has(d)) streak++;
+      else if (i > 0) break; // allow today to not be completed yet
+      else continue;
+    }
+    return streak;
+  }, [logs]);
+}
+
+function useBurnoutRisk() {
+  const { data: logs } = useRecentLogs(14);
+  return useMemo(() => {
+    if (!logs || logs.length < 5) return "Low";
+    const byDate: Record<string, number[]> = {};
+    logs.forEach((l) => {
+      if (!byDate[l.log_date]) byDate[l.log_date] = [];
+      byDate[l.log_date].push(l.status === "full" ? 1 : l.status === "min" ? 0.5 : 0);
+    });
+    const rates = Object.values(byDate).map((arr) => arr.reduce((s, v) => s + v, 0) / arr.length);
+    const avg = rates.reduce((s, r) => s + r, 0) / rates.length;
+    const variance = rates.reduce((s, r) => s + (r - avg) ** 2, 0) / rates.length;
+    if (avg < 0.3 || variance > 0.15) return "High";
+    if (avg < 0.5 || variance > 0.08) return "Medium";
+    return "Low";
+  }, [logs]);
+}
 
 export function DashboardCenter() {
+  const { data: habits, isLoading: habitsLoading } = useActiveHabits();
+  const { data: todayLogs } = useTodayLogs();
+  const { data: checkin } = useTodayCheckin();
+  const logHabit = useLogHabit();
+  const score = useConsistencyScore();
+  const streak = useStreak();
+  const burnoutRisk = useBurnoutRisk();
+
+  const [frictionModal, setFrictionModal] = useState<{ open: boolean; habitId: string; habitName: string }>({
+    open: false, habitId: "", habitName: "",
+  });
+
+  const getLogStatus = (habitId: string) => todayLogs?.find((l) => l.habit_id === habitId)?.status;
+
+  const handleLog = (habitId: string, habitName: string, status: string) => {
+    if (status === "miss") {
+      setFrictionModal({ open: true, habitId, habitName });
+      return;
+    }
+    logHabit.mutate({ habitId, status }, {
+      onSuccess: () => toast.success(`${habitName} logged as ${status}`),
+    });
+  };
+
+  const handleFrictionSubmit = (tags: string[], notes: string) => {
+    logHabit.mutate({
+      habitId: frictionModal.habitId,
+      status: "miss",
+      frictionTrigger: tags.join(", "),
+      notes,
+    }, {
+      onSuccess: () => toast.info("Friction logged"),
+    });
+  };
+
+  // Adaptive mode from energy
+  const energy = checkin?.energy;
+  const isLowEnergy = energy !== undefined && energy !== null && energy <= 3;
+  const isHighEnergy = energy !== undefined && energy !== null && energy >= 7;
+
+  const burnoutColor = burnoutRisk === "High" ? "text-destructive" : burnoutRisk === "Medium" ? "text-chart-amber" : "text-success";
+
   return (
     <main className="flex-1 overflow-y-auto p-6 space-y-6">
-      {/* Consistency Score */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-      >
+      {/* Stats Row */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="glass-card glow-primary">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Flame className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-2xl font-display font-bold text-foreground">72%</p>
-              <p className="text-xs text-muted-foreground">Consistency Score</p>
-            </div>
-            <TrendingUp className="h-4 w-4 text-success ml-auto" />
+          <CardContent className="p-4">
+            <ConsistencyGauge />
           </CardContent>
         </Card>
 
@@ -36,7 +108,7 @@ export function DashboardCenter() {
               <Target className="h-6 w-6 text-chart-teal" />
             </div>
             <div>
-              <p className="text-2xl font-display font-bold text-foreground">5</p>
+              <p className="text-2xl font-display font-bold text-foreground">{streak}</p>
               <p className="text-xs text-muted-foreground">Day Streak</p>
             </div>
           </CardContent>
@@ -48,55 +120,116 @@ export function DashboardCenter() {
               <AlertTriangle className="h-6 w-6 text-chart-amber" />
             </div>
             <div>
-              <p className="text-2xl font-display font-bold text-foreground">Low</p>
+              <p className={`text-2xl font-display font-bold ${burnoutColor}`}>{burnoutRisk}</p>
               <p className="text-xs text-muted-foreground">Burnout Risk</p>
             </div>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Momentum Curve Placeholder */}
+      {/* Momentum Curve */}
       <Card className="glass-card">
         <CardHeader>
           <CardTitle className="font-display text-lg">Momentum Curve</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
-            Chart will render with real data
-          </div>
+          <MomentumChart />
         </CardContent>
       </Card>
 
       {/* Today's Habits */}
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle className="font-display text-lg">Today's Habits</CardTitle>
+          <CardTitle className="font-display text-lg flex items-center gap-2">
+            Today's Habits
+            {isLowEnergy && <span className="text-xs font-normal text-chart-amber bg-chart-amber/10 px-2 py-0.5 rounded-full">Low Energy Mode</span>}
+            {isHighEnergy && <span className="text-xs font-normal text-success bg-success/10 px-2 py-0.5 rounded-full">Full Power</span>}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {mockHabits.map((habit) => (
-            <div
-              key={habit.name}
-              className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border/30 hover:border-primary/30 transition-colors"
-            >
-              <div>
-                <p className="text-sm font-medium text-foreground">{habit.name}</p>
-                <p className="text-xs text-muted-foreground">{habit.identity}</p>
-              </div>
-              <div className="flex gap-2">
-                <button className="px-3 py-1 rounded-md text-xs font-medium bg-success/20 text-success hover:bg-success/30 transition-colors">
-                  Full ✓
-                </button>
-                <button className="px-3 py-1 rounded-md text-xs font-medium bg-chart-amber/20 text-chart-amber hover:bg-chart-amber/30 transition-colors">
-                  Min ✓
-                </button>
-                <button className="px-3 py-1 rounded-md text-xs font-medium bg-destructive/20 text-destructive hover:bg-destructive/30 transition-colors">
-                  Miss ✗
-                </button>
-              </div>
-            </div>
-          ))}
+          {habitsLoading ? (
+            <p className="text-sm text-muted-foreground">Loading habits...</p>
+          ) : !habits || habits.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No active habits yet. Complete onboarding to get started.</p>
+          ) : (
+            habits.map((habit) => {
+              const logged = getLogStatus(habit.id);
+              const identity = habit.identities;
+              return (
+                <div
+                  key={habit.id}
+                  className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                    logged
+                      ? "bg-secondary/10 border-border/20 opacity-70"
+                      : "bg-secondary/30 border-border/30 hover:border-primary/30"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      {identity?.emoji && <span className="text-sm">{identity.emoji}</span>}
+                      <p className="text-sm font-medium text-foreground">{habit.name}</p>
+                      {logged && (
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                          logged === "full" ? "bg-success/20 text-success" : logged === "min" ? "bg-chart-amber/20 text-chart-amber" : "bg-destructive/20 text-destructive"
+                        }`}>
+                          {logged}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {isLowEnergy ? habit.min_version : habit.full_version}
+                    </p>
+                    {identity && (
+                      <p className="text-[10px] text-muted-foreground">{identity.label}</p>
+                    )}
+                  </div>
+                  {!logged && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleLog(habit.id, habit.name, "full")}
+                        className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                          isLowEnergy
+                            ? "bg-secondary/30 text-muted-foreground hover:bg-success/20 hover:text-success"
+                            : "bg-success/20 text-success hover:bg-success/30"
+                        }`}
+                      >
+                        Full ✓
+                      </button>
+                      <button
+                        onClick={() => handleLog(habit.id, habit.name, "min")}
+                        className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                          isLowEnergy
+                            ? "bg-chart-amber/20 text-chart-amber hover:bg-chart-amber/30 ring-1 ring-chart-amber/30"
+                            : "bg-chart-amber/20 text-chart-amber hover:bg-chart-amber/30"
+                        }`}
+                      >
+                        Min ✓
+                      </button>
+                      <button
+                        onClick={() => handleLog(habit.id, habit.name, "miss")}
+                        className="px-3 py-1 rounded-md text-xs font-medium bg-destructive/20 text-destructive hover:bg-destructive/30 transition-colors"
+                      >
+                        Miss ✗
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </CardContent>
       </Card>
+
+      {/* Friction Summary */}
+      <FrictionSummary />
+
+      {/* Friction Modal */}
+      <FrictionModal
+        open={frictionModal.open}
+        onClose={() => setFrictionModal((p) => ({ ...p, open: false }))}
+        onSubmit={handleFrictionSubmit}
+        habitName={frictionModal.habitName}
+      />
     </main>
   );
 }
