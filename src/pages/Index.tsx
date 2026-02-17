@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Zap, ArrowRight, Target, Brain, BarChart3 } from "lucide-react";
+import { ArrowRight, Flame, BrainCircuit, TrendingUp } from "lucide-react";
+import { BrandMark } from "@/components/ui/BrandMark";
+import { PremiumIcon } from "@/components/ui/PremiumIcon";
 
 const features = [
-  { icon: Target, title: "Identity-Based Habits", desc: "Build habits that align with who you're becoming" },
-  { icon: Brain, title: "AI-Powered Insights", desc: "Get weekly reflections on your consistency patterns" },
-  { icon: BarChart3, title: "Momentum Tracking", desc: "Visualize your consistency acceleration over time" },
+  { icon: Flame, theme: "teal" as const, title: "Identity-Based Habits", desc: "Build habits that align with who you're becoming" },
+  { icon: BrainCircuit, theme: "violet" as const, title: "AI-Powered Insights", desc: "Get weekly reflections on your consistency patterns" },
+  { icon: TrendingUp, theme: "blue" as const, title: "Momentum Tracking", desc: "Visualize your consistency acceleration over time" },
 ];
 
 const Index = () => {
@@ -30,10 +32,10 @@ const Index = () => {
         {/* Nav */}
         <nav className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
           <div className="flex items-center gap-2">
-            <Zap className="h-6 w-6 text-primary" />
-            <span className="font-display font-bold text-xl text-foreground">Lavel</span>
+            <BrandMark size="sm" />
+            <span className="font-display font-bold text-xl gradient-text">Lavel</span>
           </div>
-          <Button variant="ghost" onClick={() => navigate("/auth")}>
+          <Button variant="ghost" onClick={() => navigate("/auth")} className="hover:border hover:border-border/50">
             Sign In <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
         </nav>
@@ -52,7 +54,7 @@ const Index = () => {
             <h1 className="text-5xl sm:text-6xl font-display font-bold text-foreground leading-tight mb-6">
               Build the identity
               <br />
-              <span className="text-primary">you're becoming</span>
+              <span className="gradient-text">you're becoming</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
               Lavel is an AI-powered behavioral operating system that turns your goals into
@@ -61,7 +63,7 @@ const Index = () => {
             </p>
             <Button
               size="lg"
-              className="glow-primary text-base px-8"
+              className="btn-gradient text-base px-8 rounded-xl font-medium"
               onClick={() => navigate("/auth")}
             >
               Get Started <ArrowRight className="h-4 w-4 ml-2" />
@@ -76,8 +78,8 @@ const Index = () => {
             className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-24"
           >
             {features.map((f) => (
-              <div key={f.title} className="glass-card p-6 text-left">
-                <f.icon className="h-8 w-8 text-primary mb-3" />
+              <div key={f.title} className="glass-card-premium p-6 text-left group hover:scale-[1.02] transition-transform duration-300">
+                <PremiumIcon icon={f.icon} theme={f.theme} size="lg" className="mb-4" />
                 <h3 className="font-display font-semibold text-foreground mb-1">{f.title}</h3>
                 <p className="text-sm text-muted-foreground">{f.desc}</p>
               </div>

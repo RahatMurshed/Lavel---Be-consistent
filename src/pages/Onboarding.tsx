@@ -3,19 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, ArrowRight, ArrowLeft, Loader2, Sparkles, Check, X, RefreshCw } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, Sparkles, Check, X, RefreshCw, Hammer, Dumbbell, BookOpen, Palette, Crown, Leaf } from "lucide-react";
+import { PremiumIcon } from "@/components/ui/PremiumIcon";
+import { BrandMark } from "@/components/ui/BrandMark";
 
 const IDENTITY_OPTIONS = [
-  { label: "Builder", emoji: "🛠️", desc: "Create products, ship code, launch things" },
-  { label: "Athlete", emoji: "🏋️", desc: "Physical fitness, strength, endurance" },
-  { label: "Reader", emoji: "📚", desc: "Learn, absorb knowledge, grow intellectually" },
-  { label: "Creator", emoji: "🎨", desc: "Write, design, make art, express yourself" },
-  { label: "Leader", emoji: "👑", desc: "Manage, inspire, organize teams" },
-  { label: "Mindful", emoji: "🧘", desc: "Meditate, reflect, cultivate inner peace" },
+  { label: "Builder", icon: Hammer, theme: "violet" as const, desc: "Create products, ship code, launch things" },
+  { label: "Athlete", icon: Dumbbell, theme: "teal" as const, desc: "Physical fitness, strength, endurance" },
+  { label: "Reader", icon: BookOpen, theme: "blue" as const, desc: "Learn, absorb knowledge, grow intellectually" },
+  { label: "Creator", icon: Palette, theme: "rose" as const, desc: "Write, design, make art, express yourself" },
+  { label: "Leader", icon: Crown, theme: "amber" as const, desc: "Manage, inspire, organize teams" },
+  { label: "Mindful", icon: Leaf, theme: "emerald" as const, desc: "Meditate, reflect, cultivate inner peace" },
 ];
 
 type HabitSuggestion = {
@@ -90,7 +91,6 @@ const Onboarding = () => {
       if (!session) throw new Error("Not logged in");
       const userId = session.user.id;
 
-      // Create identities
       const identityRows = selectedIdentities.map((label) => ({ user_id: userId, label }));
       const { data: createdIdentities, error: idErr } = await supabase
         .from("identities")
@@ -98,7 +98,6 @@ const Onboarding = () => {
         .select();
       if (idErr) throw idErr;
 
-      // Create habits linked to first matching identity
       const habitRows = habits.map((h, idx) => ({
         user_id: userId,
         identity_id: createdIdentities?.[0]?.id || null,
@@ -112,7 +111,6 @@ const Onboarding = () => {
       const { error: habErr } = await supabase.from("habits").insert(habitRows);
       if (habErr) throw habErr;
 
-      // Mark onboarding complete
       const { error: profErr } = await supabase
         .from("profiles")
         .update({ onboarding_completed: true })
@@ -130,14 +128,14 @@ const Onboarding = () => {
   const steps = [
     // Step 0: Welcome
     <motion.div key="welcome" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="text-center space-y-6">
-      <div className="inline-flex items-center gap-2 mb-2">
-        <Zap className="h-10 w-10 text-primary" />
-      </div>
-      <h2 className="text-3xl font-display font-bold text-foreground">Let's build your identity system</h2>
+      <BrandMark size="lg" animated className="mx-auto mb-2" />
+      <h2 className="text-3xl font-display font-bold">
+        Let's build your <span className="gradient-text">identity system</span>
+      </h2>
       <p className="text-muted-foreground max-w-md mx-auto">
         In the next few steps, you'll declare who you're becoming, set your goals, and get an AI-generated habit stack.
       </p>
-      <Button onClick={() => setStep(1)} className="glow-primary">
+      <Button onClick={() => setStep(1)} className="btn-gradient rounded-xl px-6">
         Let's Go <ArrowRight className="h-4 w-4 ml-2" />
       </Button>
     </motion.div>,
@@ -145,29 +143,35 @@ const Onboarding = () => {
     // Step 1: Identity
     <motion.div key="identity" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-display font-bold text-foreground">Who are you becoming?</h2>
+        <h2 className="text-2xl font-display font-bold">
+          Who are you <span className="gradient-text">becoming</span>?
+        </h2>
         <p className="text-muted-foreground text-sm mt-1">Select 1–3 identities</p>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {IDENTITY_OPTIONS.map((id) => (
-          <button
-            key={id.label}
-            onClick={() => toggleIdentity(id.label)}
-            className={`p-4 rounded-lg border text-left transition-all ${
-              selectedIdentities.includes(id.label)
-                ? "border-primary bg-primary/10 glow-primary"
-                : "border-border/50 bg-secondary/30 hover:border-primary/30"
-            }`}
-          >
-            <span className="text-2xl">{id.emoji}</span>
-            <p className="font-medium text-foreground text-sm mt-2">{id.label}</p>
-            <p className="text-xs text-muted-foreground">{id.desc}</p>
-          </button>
-        ))}
+        {IDENTITY_OPTIONS.map((id) => {
+          const selected = selectedIdentities.includes(id.label);
+          return (
+            <motion.button
+              key={id.label}
+              onClick={() => toggleIdentity(id.label)}
+              whileTap={{ scale: 0.97 }}
+              className={`p-4 rounded-xl border text-left transition-all duration-200 ${
+                selected
+                  ? "border-primary/60 bg-primary/10 ring-1 ring-primary/30 scale-[1.02]"
+                  : "border-border/30 bg-secondary/20 hover:border-primary/30 hover:bg-secondary/30"
+              }`}
+            >
+              <PremiumIcon icon={id.icon} theme={id.theme} size="md" className="mb-3" />
+              <p className="font-medium text-foreground text-sm">{id.label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{id.desc}</p>
+            </motion.button>
+          );
+        })}
       </div>
       <div className="flex justify-between">
-        <Button variant="ghost" onClick={() => setStep(0)}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
-        <Button onClick={() => setStep(2)} disabled={selectedIdentities.length === 0} className="glow-primary">
+        <Button variant="ghost" onClick={() => setStep(0)} className="hover:border hover:border-border/50"><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
+        <Button onClick={() => setStep(2)} disabled={selectedIdentities.length === 0} className="btn-gradient rounded-xl">
           Next <ArrowRight className="h-4 w-4 ml-1" />
         </Button>
       </div>
@@ -176,7 +180,9 @@ const Onboarding = () => {
     // Step 2: Outcomes
     <motion.div key="outcomes" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-display font-bold text-foreground">What are your goals?</h2>
+        <h2 className="text-2xl font-display font-bold">
+          What are your <span className="gradient-text">goals</span>?
+        </h2>
         <p className="text-muted-foreground text-sm mt-1">Add 1–3 high-level outcomes</p>
       </div>
       <div className="space-y-3">
@@ -202,11 +208,11 @@ const Onboarding = () => {
         )}
       </div>
       <div className="flex justify-between">
-        <Button variant="ghost" onClick={() => setStep(1)}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
+        <Button variant="ghost" onClick={() => setStep(1)} className="hover:border hover:border-border/50"><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
         <Button
           onClick={generateHabits}
           disabled={generating || !outcomes.some((o) => o.trim())}
-          className="glow-primary"
+          className="btn-gradient rounded-xl"
         >
           {generating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
           {generating ? "Generating..." : "Generate Habits"}
@@ -217,12 +223,14 @@ const Onboarding = () => {
     // Step 3: Review
     <motion.div key="review" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-display font-bold text-foreground">Your Habit Stack</h2>
+        <h2 className="text-2xl font-display font-bold">
+          Your <span className="gradient-text">Habit Stack</span>
+        </h2>
         <p className="text-muted-foreground text-sm mt-1">Review and adjust your AI-generated habits</p>
       </div>
       <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
         {habits.map((h, i) => (
-          <Card key={i} className="glass-card">
+          <Card key={i} className="glass-card-premium">
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
@@ -242,10 +250,10 @@ const Onboarding = () => {
         ))}
       </div>
       <div className="flex justify-between">
-        <Button variant="ghost" onClick={() => { setStep(2); }}>
+        <Button variant="ghost" onClick={() => { setStep(2); }} className="hover:border hover:border-border/50">
           <RefreshCw className="h-4 w-4 mr-1" /> Regenerate
         </Button>
-        <Button onClick={saveAndFinish} disabled={saving || habits.length === 0} className="glow-primary">
+        <Button onClick={saveAndFinish} disabled={saving || habits.length === 0} className="btn-gradient rounded-xl">
           {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
           {saving ? "Saving..." : "Start My Journey"}
         </Button>
@@ -264,8 +272,8 @@ const Onboarding = () => {
           {[0, 1, 2, 3].map((s) => (
             <div
               key={s}
-              className={`h-1.5 rounded-full transition-all ${
-                s <= step ? "w-10 bg-primary" : "w-6 bg-secondary"
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                s <= step ? "w-10 bg-gradient-to-r from-primary to-chart-blue" : "w-6 bg-secondary"
               }`}
             />
           ))}

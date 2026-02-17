@@ -5,8 +5,9 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { DashboardCenter } from "@/components/dashboard/DashboardCenter";
 import { DashboardRight } from "@/components/dashboard/DashboardRight";
-import { Zap, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BrandMark } from "@/components/ui/BrandMark";
 import type { User } from "@supabase/supabase-js";
 
 const Dashboard = () => {
@@ -30,7 +31,6 @@ const Dashboard = () => {
       }
       setUser(session.user);
 
-      // Check onboarding status
       const { data: profile } = await supabase
         .from("profiles")
         .select("onboarding_completed")
@@ -63,15 +63,15 @@ const Dashboard = () => {
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <div className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-primary" />
-                <span className="font-display font-semibold text-foreground">Lavel</span>
+                <BrandMark size="sm" />
+                <span className="font-display font-semibold gradient-text">Lavel</span>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground hidden sm:block">
                 {user.user_metadata?.display_name || user.email}
               </span>
-              <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <Button variant="ghost" size="icon" onClick={handleLogout} className="text-muted-foreground hover:text-destructive transition-colors">
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
