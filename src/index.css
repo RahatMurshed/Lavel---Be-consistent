@@ -11,58 +11,58 @@
 
 @layer base {
   :root {
-    --background: 228 14% 7%;
+    --background: 200 18% 7%;
     --foreground: 220 20% 92%;
 
-    --card: 228 16% 10%;
+    --card: 200 18% 10%;
     --card-foreground: 220 20% 92%;
 
-    --popover: 228 16% 10%;
+    --popover: 200 18% 10%;
     --popover-foreground: 220 20% 92%;
 
-    --primary: 258 62% 63%;
+    --primary: 180 65% 48%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 228 16% 14%;
+    --secondary: 200 16% 14%;
     --secondary-foreground: 220 20% 85%;
 
-    --muted: 228 14% 16%;
+    --muted: 200 14% 16%;
     --muted-foreground: 220 10% 55%;
 
-    --accent: 258 62% 63%;
+    --accent: 180 65% 48%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 228 14% 18%;
-    --input: 228 14% 18%;
-    --ring: 258 62% 63%;
+    --border: 200 14% 18%;
+    --input: 200 14% 18%;
+    --ring: 180 65% 48%;
 
     --radius: 0.75rem;
 
     /* Pastel accent palette for charts & identity colors */
-    --chart-violet: 258 62% 68%;
+    --chart-violet: 180 60% 55%;
     --chart-teal: 172 50% 55%;
     --chart-amber: 38 85% 65%;
     --chart-rose: 350 65% 65%;
-    --chart-blue: 215 70% 62%;
+    --chart-blue: 220 65% 58%;
     --chart-emerald: 152 55% 52%;
 
     /* Glass-morphism */
-    --glass-bg: 228 16% 12%;
-    --glass-border: 228 14% 22%;
-    --glow-primary: 258 62% 63%;
+    --glass-bg: 200 18% 12%;
+    --glass-border: 200 14% 22%;
+    --glow-primary: 180 65% 48%;
 
     /* Sidebar */
-    --sidebar-background: 228 16% 8%;
+    --sidebar-background: 200 18% 8%;
     --sidebar-foreground: 220 20% 80%;
-    --sidebar-primary: 258 62% 63%;
+    --sidebar-primary: 180 65% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 228 14% 14%;
+    --sidebar-accent: 200 14% 14%;
     --sidebar-accent-foreground: 220 20% 92%;
-    --sidebar-border: 228 14% 16%;
-    --sidebar-ring: 258 62% 63%;
+    --sidebar-border: 200 14% 16%;
+    --sidebar-ring: 180 65% 48%;
 
     /* Success / Warning */
     --success: 152 55% 52%;

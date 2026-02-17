@@ -5,8 +5,8 @@ type ColorTheme = "violet" | "teal" | "amber" | "rose" | "blue" | "emerald";
 
 const themeStyles: Record<ColorTheme, { bg: string; glow: string }> = {
   violet: {
-    bg: "from-[hsl(258,62%,63%)] to-[hsl(215,70%,62%)]",
-    glow: "shadow-[0_0_20px_-4px_hsl(258,62%,63%,0.4)]",
+    bg: "from-[hsl(180,65%,48%)] to-[hsl(220,65%,58%)]",
+    glow: "shadow-[0_0_20px_-4px_hsl(180,65%,48%,0.4)]",
   },
   teal: {
     bg: "from-[hsl(172,50%,55%)] to-[hsl(152,55%,52%)]",
