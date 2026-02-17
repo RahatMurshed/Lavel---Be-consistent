@@ -1,117 +1,69 @@
 
-# Motivational Quotes System -- Full Consistency Reinforcement
+
+# Theme Color Change -- Consistency-Reflected Palette
 
 ## Overview
-Add motivational quotes across the entire sign-in flow (Auth page, Onboarding steps) using an expanded curated library, and create an AI-powered personalized motivation system on the dashboard that generates quotes based on the user's actual behavior data (streak, completion rate, identities, energy, burnout risk).
+Shift the primary color from the current violet (258 62% 63%) to a deep teal-cyan that reflects consistency -- steady, calm, trustworthy, and progressive. The secondary accent shifts to a warm indigo for contrast. This creates a color story: teal = steady consistency, indigo = aspiration.
 
 ---
 
-## What Already Exists
-- Auth page has 3 rotating quotes with fade animation -- needs expansion
-- Onboarding has no quotes at all
-- Dashboard has no daily motivation card
-- Habit logging toasts are plain text, no motivational reinforcement
-- Edge function `habit-generator` exists as a pattern reference
-- `LOVABLE_API_KEY` secret is already configured
+## New Primary Color: Deep Teal (180 65% 48%)
+
+The teal family represents reliability, steady growth, and calm focus -- the visual metaphor for consistency. The gradient accent shifts from teal to a cool indigo for depth.
 
 ---
 
-## Part 1: Curated Quotes Library
+## CSS Variable Changes (`src/index.css`)
 
-Create `src/lib/quotes.ts` with:
+| Variable | Current (Violet) | New (Teal/Consistency) |
+|----------|-------------------|------------------------|
+| `--primary` | 258 62% 63% | 180 65% 48% |
+| `--accent` | 258 62% 63% | 180 65% 48% |
+| `--ring` | 258 62% 63% | 180 65% 48% |
+| `--glow-primary` | 258 62% 63% | 180 65% 48% |
+| `--chart-violet` | 258 62% 68% | 180 60% 55% |
+| `--chart-blue` | 215 70% 62% | 220 65% 58% |
+| `--sidebar-primary` | 258 62% 63% | 180 65% 48% |
+| `--sidebar-ring` | 258 62% 63% | 180 65% 48% |
 
-- `AUTH_QUOTES` -- 15+ consistency-themed quotes with attribution for the Auth page rotating display
-- `ONBOARDING_QUOTES` -- 4 themed quotes (one per step):
-  - Step 0 (Welcome): About starting and identity
-  - Step 1 (Identity): About becoming who you want to be
-  - Step 2 (Outcomes): About goals and systems
-  - Step 3 (Review): About taking action
-- `ACTION_TOASTS` -- motivational toast messages categorized by action type:
-  - `full`: 5+ encouraging messages for completing habits fully
-  - `min`: 5+ supportive messages for minimum completions
-  - `miss`: 5+ compassionate messages for logging friction
-
----
-
-## Part 2: Expand Auth Page Quotes
-
-Update `src/pages/Auth.tsx`:
-- Replace the 3 hardcoded quotes with the expanded `AUTH_QUOTES` array from the quotes library
-- Keep the existing 6-second rotation with AnimatePresence fade animation
-- No structural changes needed -- just swap the data source
-
----
-
-## Part 3: Add Quotes to Onboarding Steps
-
-Update `src/pages/Onboarding.tsx`:
-- Add a contextual quote at the bottom of each step, below the navigation buttons
-- Each step displays its themed quote from `ONBOARDING_QUOTES`
-- Styled as italic, muted text with a subtle fade-in animation
-- Quote changes with each step transition
+Background and card tones shift slightly cooler to complement teal:
+| Variable | Current | New |
+|----------|---------|-----|
+| `--background` | 228 14% 7% | 200 18% 7% |
+| `--card` | 228 16% 10% | 200 18% 10% |
+| `--secondary` | 228 16% 14% | 200 16% 14% |
+| `--muted` | 228 14% 16% | 200 14% 16% |
+| `--border` | 228 14% 18% | 200 14% 18% |
+| `--glass-bg` | 228 16% 12% | 200 18% 12% |
+| `--glass-border` | 228 14% 22% | 200 14% 22% |
 
 ---
 
-## Part 4: AI-Powered Daily Motivation Edge Function
+## PremiumIcon Theme Updates (`src/components/ui/PremiumIcon.tsx`)
 
-Create `supabase/functions/motivational-quote/index.ts`:
-- Accepts POST with user behavior data: `{ streak, completionRate, identities, burnoutRisk, energy, recentMisses }`
-- Uses Lovable AI (`google/gemini-3-flash-preview`) to generate a personalized 1-2 sentence motivational message
-- System prompt: "You are a consistency coach. Based on the user's data, write a short, powerful motivational message (1-2 sentences). Be warm, specific to their situation, and focused on consistency over perfection."
-- Returns `{ quote: string }`
-- Handles 429/402 errors, falls back gracefully
-- Update `supabase/config.toml` to register the function with `verify_jwt = false`
+Update the "violet" (default) theme's HSL values from 258-based to 180-based teal:
+- `violet` becomes the teal primary: `from-[hsl(180,65%,48%)]` to `[hsl(220,65%,58%)]`
 
 ---
 
-## Part 5: Daily Motivation Dashboard Component
+## BrandMark SVG Updates (`src/components/ui/BrandMark.tsx`)
 
-Create `src/components/dashboard/DailyMotivation.tsx`:
-- Positioned at the top of `DashboardRight`
-- Uses React Query with key `["daily-motivation", todayDateString]` to fetch once per day (staleTime: 24 hours)
-- Collects user context from existing hooks (useConsistencyScore, useStreak, useActiveHabits, useTodayCheckin, useBurnoutRisk)
-- When user has behavior data (logs exist): calls `motivational-quote` edge function
-- When user is new (no data): shows a random curated quote from `AUTH_QUOTES`
-- Glass card with a sparkle/quote icon, italic premium typography
-- Loading skeleton while fetching
-
-Update `src/components/dashboard/DashboardRight.tsx`:
-- Import and render `DailyMotivation` at the top of the aside, before Morning Check-in
+Update gradient stop colors from violet hues to teal hues to match the new primary.
 
 ---
 
-## Part 6: Motivational Toasts on Habit Logging
+## Glow-Pulse Keyframe (`tailwind.config.ts`)
 
-Update `src/components/dashboard/DashboardCenter.tsx`:
-- Replace plain toast messages with randomized motivational messages from `ACTION_TOASTS`
-- "Full" log: `toast.success(randomFullMessage)` -- e.g., "Full send! You're becoming who you said you'd be."
-- "Min" log: `toast.success(randomMinMessage)` -- e.g., "Showing up matters more than intensity."
-- "Miss" friction: `toast.info(randomMissMessage)` -- e.g., "Awareness is the first step to recovery."
+Update the hardcoded `hsl(258 62% 63%)` in the `glow-pulse` keyframe to `hsl(180 65% 48%)`.
 
 ---
 
-## Technical Details
-
-### New Files
-
-| File | Purpose |
-|------|---------|
-| `src/lib/quotes.ts` | Curated quotes library with AUTH_QUOTES, ONBOARDING_QUOTES, ACTION_TOASTS |
-| `supabase/functions/motivational-quote/index.ts` | AI edge function for personalized daily motivation |
-| `src/components/dashboard/DailyMotivation.tsx` | Dashboard card showing daily AI-generated or curated quote |
-
-### Modified Files
+## Files Modified
 
 | File | Change |
 |------|--------|
-| `src/pages/Auth.tsx` | Import quotes from library instead of hardcoded array |
-| `src/pages/Onboarding.tsx` | Add themed quote display at bottom of each step |
-| `src/components/dashboard/DashboardRight.tsx` | Add DailyMotivation card at top |
-| `src/components/dashboard/DashboardCenter.tsx` | Replace plain toast messages with motivational variants |
-| `supabase/config.toml` | Register motivational-quote function |
+| `src/index.css` | Update all CSS custom property values to teal-based palette |
+| `src/components/ui/PremiumIcon.tsx` | Update default "violet" theme HSL values to teal |
+| `src/components/ui/BrandMark.tsx` | Update SVG gradient colors to teal |
+| `tailwind.config.ts` | Update hardcoded HSL in glow-pulse keyframe |
 
-### Edge Function Details
-- Model: `google/gemini-3-flash-preview` (fast, cost-effective)
-- Uses tool calling to extract structured `{ quote: string }` response
-- Prompt includes user's streak count, completion rate, identity labels, energy level, and burnout risk
-- Graceful fallback to curated quotes on any AI error
