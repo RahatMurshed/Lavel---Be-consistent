@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowLeft, Loader2, Sparkles, Check, X, RefreshCw, Hammer, Dumbbell, BookOpen, Palette, Crown, Leaf } from "lucide-react";
 import { PremiumIcon } from "@/components/ui/PremiumIcon";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { ONBOARDING_QUOTES } from "@/lib/quotes";
 
 const IDENTITY_OPTIONS = [
   { label: "Builder", icon: Hammer, theme: "violet" as const, desc: "Create products, ship code, launch things" },
@@ -295,6 +296,19 @@ const Onboarding = () => {
         </div>
 
         <AnimatePresence mode="wait">{steps[step]}</AnimatePresence>
+
+        {/* Step-contextual quote */}
+        <motion.div
+          key={`quote-${step}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="mt-6 text-center"
+        >
+          <p className="text-xs text-muted-foreground italic max-w-sm mx-auto">
+            "{ONBOARDING_QUOTES[step]?.text}" — <span className="not-italic text-muted-foreground/70">{ONBOARDING_QUOTES[step]?.author}</span>
+          </p>
+        </motion.div>
       </div>
     </div>
   );

@@ -13,6 +13,7 @@ import { PremiumIcon } from "@/components/ui/PremiumIcon";
 import { format, subDays } from "date-fns";
 import { useMemo } from "react";
 import { toast } from "sonner";
+import { getRandomToast } from "@/lib/quotes";
 
 function useStreak() {
   const { data: logs } = useRecentLogs(60);
@@ -81,7 +82,7 @@ export function DashboardCenter() {
       return;
     }
     logHabit.mutate({ habitId, status }, {
-      onSuccess: () => toast.success(`${habitName} logged as ${status}`),
+      onSuccess: () => toast.success(getRandomToast(status as "full" | "min")),
     });
   };
 
@@ -92,7 +93,7 @@ export function DashboardCenter() {
       frictionTrigger: tags.join(", "),
       notes,
     }, {
-      onSuccess: () => toast.info("Friction logged"),
+      onSuccess: () => toast.info(getRandomToast("miss")),
     });
   };
 

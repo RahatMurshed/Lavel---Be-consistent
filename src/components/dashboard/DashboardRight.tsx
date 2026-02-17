@@ -5,6 +5,7 @@ import { useTodayCheckin, useSubmitCheckin } from "@/hooks/useDailyCheckin";
 import { useActiveHabits } from "@/hooks/useHabits";
 import { PremiumIcon } from "@/components/ui/PremiumIcon";
 import { toast } from "sonner";
+import { DailyMotivation } from "./DailyMotivation";
 
 export function DashboardRight() {
   const { data: checkin, isLoading } = useTodayCheckin();
@@ -31,6 +32,9 @@ export function DashboardRight() {
 
   return (
     <aside className="hidden lg:block w-80 border-l border-border/50 overflow-y-auto p-4 space-y-4">
+      {/* Daily Motivation */}
+      <DailyMotivation />
+
       {/* Morning Check-in */}
       <Card className="glass-card-premium overflow-hidden hover-float">
         <div className="h-0.5 bg-gradient-to-r from-chart-amber to-chart-rose animate-shimmer bg-[length:200%_100%]" />

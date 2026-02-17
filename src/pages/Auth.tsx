@@ -10,11 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { BrandMark } from "@/components/ui/BrandMark";
 
-const quotes = [
-  "Consistency is the bridge between goals and accomplishment.",
-  "Small daily improvements are the key to staggering long-term results.",
-  "You do not rise to the level of your goals. You fall to the level of your systems.",
-];
+import { AUTH_QUOTES } from "@/lib/quotes";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -27,7 +23,7 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const interval = setInterval(() => setQuoteIdx((i) => (i + 1) % quotes.length), 6000);
+    const interval = setInterval(() => setQuoteIdx((i) => (i + 1) % AUTH_QUOTES.length), 6000);
     return () => clearInterval(interval);
   }, []);
 
@@ -172,7 +168,7 @@ const Auth = () => {
               transition={{ duration: 0.4 }}
               className="text-xs text-muted-foreground italic max-w-sm mx-auto"
             >
-              "{quotes[quoteIdx]}"
+              "{AUTH_QUOTES[quoteIdx].text}" — <span className="not-italic text-muted-foreground/70">{AUTH_QUOTES[quoteIdx].author}</span>
             </motion.p>
           </AnimatePresence>
         </div>
