@@ -1,106 +1,118 @@
 
 
-# Lavel — Consistency OS (Full Implementation Plan)
+# LEVEL -- Wiring Real Data + Core Feature Implementation
 
-## Overview
-A behavioral operating system powered by AI that builds identity-based consistency. Dark premium design with hybrid layout density — key metrics at a glance with expandable deep analytics. Powered by Lovable Cloud (Supabase) for backend and Lovable AI for behavioral intelligence.
+## What's Already Built
+- Auth (login/signup), onboarding flow (identity + outcomes + AI habit generation)
+- Database: profiles, identities, habits, behavior_logs, daily_checkins, seasonal_modes (all with RLS)
+- Dashboard shell: 3-panel layout with mock data
+- Edge function: habit-generator (AI-powered)
+- Design system: dark premium theme, glass cards, glow effects
+
+## What This Plan Delivers
+Wire the dashboard to real data and implement the core behavioral engine features from the PRD. This is broken into 5 parts.
 
 ---
 
-## 1. Authentication & Onboarding
-- Email/password sign-up and login with user profiles (name, avatar, timezone)
-- Guided onboarding flow:
-  1. Declare target identity (e.g., "I am becoming a Builder")
-  2. Set 1–3 high-level outcomes (e.g., "Launch a SaaS," "Lose 8kg")
-  3. AI generates initial habit stack from outcomes
-  4. User reviews, adjusts, and confirms habits
+## Part 1: Live Dashboard Data
 
-## 2. AI Outcome → Habit Generator
-- Input a high-level goal from onboarding or dashboard
-- AI returns an **Ordered Habit Stack** with:
-  - Identity label (Reader, Athlete, Builder, etc.)
-  - Full version and Minimum version of each habit
-  - Impact weight, cue/trigger, and timeline
-  - "Do More Packages" — grouped systems, not isolated habits
-- Users can accept, edit, or regenerate suggestions
-- Powered by Lovable AI edge function
+Replace all mock/static data in the dashboard with real queries.
 
-## 3. Identity-Based Dashboard (Main View)
-- **Three-panel layout:**
-  - **Left sidebar**: Identity cards with quick habit access and navigation
-  - **Center panel**: Momentum Curve (Recharts), Growth Meter, today's habits, friction log summary
-  - **Right panel**: AI reflections, adaptive daily plan, micro-challenges
-- **Identity Cards** show growth meter (alignment %), linked habits, and drift alerts
-- **Consistency Score** displayed prominently with trend indicator
-- **Momentum Curve**: Line chart showing consistency acceleration/deceleration over time
-- Expandable sections for deeper analytics (hybrid density approach)
+**Sidebar (AppSidebar)**
+- Fetch user's identities from database
+- Show each identity card with real alignment_pct and linked habit count
+- Dynamically render identity colors and labels
 
-## 4. Adaptive Daily Planning
-- **Morning Check-in** modal: energy (1–10 slider) and mood selection
-- AI suggests Full or Minimum version for each habit based on input
-- **Stress-Load Balancer**: Auto-activates Minimum Mode when energy ≤ 3
-- Visual badges showing active mode per habit (Full / Min)
-- Accessible from the right panel of the dashboard
+**Center Panel (DashboardCenter)**
+- Fetch today's habits from database (active habits for current user)
+- Show Full/Min/Miss buttons that actually write to `behavior_logs`
+- After logging, update UI optimistically
+- Calculate real Consistency Score from behavior_logs (last 30 days)
+- Show real streak count (consecutive days with at least one completion)
+- Compute burnout risk from habit load + recent completion variance
+- Momentum Curve chart: query last 14 days of behavior_logs, compute daily completion %, render as Recharts line chart
 
-## 5. Habit Tracking & Friction Logging
-- One-tap completion: Full ✓, Min ✓, or Miss ✗
-- On miss: select friction trigger (Low energy, Bad environment, Mood, Time conflict, Distraction, Other)
-- Behavior log captures: status, trigger, energy, stress, timestamp
-- Calendar heatmap showing daily completion patterns
-- After 2+ weeks, AI surfaces friction patterns (e.g., "You miss workouts on Tuesdays after 8 PM")
+**Right Panel (DashboardRight)**
+- Morning Check-in: save energy + mood to `daily_checkins` table, disable after submission for today
+- AI Mirror: fetch latest weekly report or show placeholder until enough data exists
+- Micro Challenge: generate from existing habits using a simple random selection (full AI micro-challenge generator comes later)
 
-## 6. Consistency Scoring Engine
-- **Formula**: CS = (completed / expected) × trend stability × recovery speed
-- Per-habit and overall scores with trend charts
-- Overload detection: warns when too many habits are stacking up
-- Recovery speed tracking: how fast user bounces back after a miss
+---
 
-## 7. AI Weekly Report ("AI Mirror")
-- Auto-generated weekly narrative including:
-  - "Who you are becoming" — identity alignment narrative
-  - High-Leverage Habit identification
-  - Recovery speed metrics with improvement trends
-  - Burnout risk detection and warnings
-  - Friction pattern analysis with environmental change suggestions
-- Report history accessible from dashboard
-- Powered by Lovable AI edge function
+## Part 2: Friction Logging System
 
-## 8. Identity Evolution Timeline (Extra)
-- Visual timeline showing how identity alignment percentages shift over weeks and months
-- Milestone markers for notable improvements or identity shifts
-- Helps users see long-term transformation at a glance
+When user taps "Miss" on a habit:
+- Show a modal/dialog asking "What stopped you?"
+- Multi-select friction tags: Low energy, Time mismanagement, Forgot, Mood, Environment, Competing priority, Motivation
+- Optional notes field
+- Save to `behavior_logs` with status='miss', friction_trigger (comma-separated tags), and notes
+- Dashboard card: "Top Friction This Week" -- query this week's miss logs, aggregate friction tags, show distribution
 
-## 9. Micro-Commitment Challenges (Extra)
-- AI generates contextual mini-challenges (e.g., "Do 5 pushups right now") based on current identity goals
-- Appear in the right panel as actionable cards
-- Completion reinforces identity without perfectionist pressure
-- Lightweight gamification — challenge streaks without punishment for misses
+---
 
-## 10. Seasonal Modes (Extra)
-- Users can activate life-phase modes (Exam Season, Holiday, Recovery, Travel, etc.)
-- AI adjusts habit expectations and switches more habits to Minimum versions
-- Visual indicator on dashboard showing active seasonal mode
-- Keeps consistency scoring fair during difficult periods
+## Part 3: Consistency Score Engine
 
-## 11. Analytics & Insights Page
-- Consistency Score breakdown per habit with trend charts
-- Friction analysis bar charts (most common failure triggers)
-- Energy–performance correlation scatter plot
-- Recovery speed timeline
-- Habit stability variance (which habits are most volatile)
-- All charts using Recharts with pastel accent colors on dark backgrounds
+Create a utility/hook that computes the 5-dimensional score from the PRD:
 
-## 12. Design System
-- **Dark premium theme**: Deep dark backgrounds, soft gradients, subtle glow effects
-- **Pastel accent palette** for charts, identity colors, and interactive elements
-- **Rounded cards** with glass-morphism-inspired subtle borders
-- **Premium typography** with clear hierarchy
-- **Hybrid density**: Key metrics visible at a glance, expandable panels for deep dives
-- Responsive design with mobile-optimized daily check-in and habit tracking
+```
+A = Completion Ratio (30%) = completed / expected
+B = Trend Stability (25%) = inverse of daily completion variance
+C = Recovery Speed (20%) = (7 - avg days to return after miss) / 7 * 100
+D = Resilience Index (15%) = completion rate on low-energy days (energy <= 4)
+E = Energy Alignment (10%) = completion % during peak energy hours
+```
 
-## 13. Backend Architecture (Lovable Cloud)
-- **Database tables**: profiles, identities, habits, behavior_logs, daily_checkins, weekly_reports, analytics_snapshots, micro_challenges, seasonal_modes
-- **Edge Functions**: habit-generator (AI), weekly-report (AI), daily-plan (AI), analytics-compute, micro-challenge-generator (AI)
-- **Row-Level Security** on all user data tables
-- **Authentication** with email/password via Supabase Auth
+- Compute from last 30 days of behavior_logs + daily_checkins
+- Display as large circular gauge on dashboard (using a radial progress component)
+- Show breakdown with each component labeled
+- Color coding: Red (0-40), Yellow (40-70), Green (70-100)
+
+---
+
+## Part 4: Adaptive Daily Planning
+
+Enhance the morning check-in flow:
+- When energy <= 3: auto-switch all habits to show "Minimum" version prominently, with "Full" as optional
+- When energy >= 7: show "Full" version prominently with encouragement text
+- Add visual badges on each habit card showing current mode (Full / Min)
+- Store the daily plan mode in daily_checkins
+
+---
+
+## Part 5: Database Updates
+
+New migration to add:
+- `consistency_scores` table: user_id, score_date, overall_score, completion_ratio, trend_stability, recovery_speed, resilience_index, energy_alignment
+- `weekly_reports` table: user_id, week_start, report_content (JSONB), created_at
+- Add `emoji` column to `identities` table (for identity card display)
+- Add `stress_level` column to `daily_checkins` table (integer 1-10, nullable)
+
+---
+
+## Technical Details
+
+### New/Modified Files
+
+| File | Action |
+|------|--------|
+| `src/hooks/useHabits.ts` | New -- fetch habits, identities, logs with React Query |
+| `src/hooks/useConsistencyScore.ts` | New -- compute 5-dimensional score |
+| `src/hooks/useDailyCheckin.ts` | New -- manage morning check-in state |
+| `src/components/dashboard/DashboardCenter.tsx` | Rewrite -- real data, habit logging, momentum chart |
+| `src/components/dashboard/DashboardRight.tsx` | Rewrite -- real check-in, AI mirror, micro-challenge |
+| `src/components/AppSidebar.tsx` | Rewrite -- real identities from DB |
+| `src/components/dashboard/FrictionModal.tsx` | New -- friction logging dialog |
+| `src/components/dashboard/ConsistencyGauge.tsx` | New -- circular score visualization |
+| `src/components/dashboard/MomentumChart.tsx` | New -- Recharts line chart |
+| `src/components/dashboard/FrictionSummary.tsx` | New -- top friction card |
+| Migration SQL | New -- consistency_scores, weekly_reports tables + identity emoji column |
+
+### Data Flow
+
+1. User opens dashboard -> hooks fetch habits, identities, today's checkin, recent logs
+2. If no checkin today -> Morning Check-in prompt appears in right panel
+3. User submits energy/mood -> daily_checkins row created -> habits display adapts (full vs min mode)
+4. User taps Full/Min/Miss -> behavior_logs row created -> if Miss, friction modal opens
+5. Consistency score recomputes on each page load from last 30 days of logs
+6. Momentum chart shows last 14 days of daily completion percentages
 
