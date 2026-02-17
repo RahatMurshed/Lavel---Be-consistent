@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,9 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { BrandMark } from "@/components/ui/BrandMark";
+
+const quotes = [
+  "Consistency is the bridge between goals and accomplishment.",
+  "Small daily improvements are the key to staggering long-term results.",
+  "You do not rise to the level of your goals. You fall to the level of your systems.",
+];
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,8 +22,14 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [quoteIdx, setQuoteIdx] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const interval = setInterval(() => setQuoteIdx((i) => (i + 1) % quotes.length), 6000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +67,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden neon-grid-bg">
       {/* Background glow effects */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse-glow" />
       <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-chart-teal/10 rounded-full blur-[100px] animate-pulse-glow" />
@@ -75,7 +87,7 @@ const Auth = () => {
           <p className="text-muted-foreground text-sm">Your Consistency Operating System</p>
         </div>
 
-        <Card className="glass-card-premium border-border/50">
+        <Card className="glass-card-premium shimmer-border border-border/50">
           <CardHeader className="text-center">
             <CardTitle className="font-display text-xl">
               {isLogin ? "Welcome back" : "Start your journey"}
@@ -95,7 +107,7 @@ const Auth = () => {
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Your name"
                     required={!isLogin}
-                    className="bg-secondary/50 border-border/50"
+                    className="bg-secondary/50 border-border/50 focus:ring-primary/50 focus:ring-2 transition-shadow"
                   />
                 </div>
               )}
@@ -108,7 +120,7 @@ const Auth = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="bg-secondary/50 border-border/50"
+                  className="bg-secondary/50 border-border/50 focus:ring-primary/50 focus:ring-2 transition-shadow"
                 />
               </div>
               <div className="space-y-2">
@@ -121,12 +133,12 @@ const Auth = () => {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="bg-secondary/50 border-border/50"
+                  className="bg-secondary/50 border-border/50 focus:ring-primary/50 focus:ring-2 transition-shadow"
                 />
               </div>
               <Button
                 type="submit"
-                className="w-full btn-gradient rounded-lg font-medium"
+                className="w-full btn-gradient rounded-lg font-medium animate-glow-pulse"
                 disabled={loading}
               >
                 {loading ? (
@@ -148,6 +160,22 @@ const Auth = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Rotating quote */}
+        <div className="mt-6 text-center h-10">
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={quoteIdx}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4 }}
+              className="text-xs text-muted-foreground italic max-w-sm mx-auto"
+            >
+              "{quotes[quoteIdx]}"
+            </motion.p>
+          </AnimatePresence>
+        </div>
       </motion.div>
     </div>
   );

@@ -32,11 +32,11 @@ export function DashboardRight() {
   return (
     <aside className="hidden lg:block w-80 border-l border-border/50 overflow-y-auto p-4 space-y-4">
       {/* Morning Check-in */}
-      <Card className="glass-card-premium overflow-hidden">
-        <div className="h-0.5 bg-gradient-to-r from-chart-amber to-chart-rose" />
+      <Card className="glass-card-premium overflow-hidden hover-float">
+        <div className="h-0.5 bg-gradient-to-r from-chart-amber to-chart-rose animate-shimmer bg-[length:200%_100%]" />
         <CardHeader className="pb-2">
           <CardTitle className="font-display text-sm flex items-center gap-2">
-            <PremiumIcon icon={Sunrise} theme="amber" size="sm" />
+            <PremiumIcon icon={Sunrise} theme="amber" size="sm" animated />
             Morning Check-in
           </CardTitle>
         </CardHeader>
@@ -74,8 +74,8 @@ export function DashboardRight() {
       </Card>
 
       {/* AI Reflection */}
-      <Card className="glass-card-premium overflow-hidden">
-        <div className="h-0.5 bg-gradient-to-r from-primary to-chart-blue" />
+      <Card className="glass-card-premium overflow-hidden hover-float">
+        <div className="h-0.5 bg-gradient-to-r from-primary to-chart-blue animate-shimmer bg-[length:200%_100%]" />
         <CardHeader className="pb-2">
           <CardTitle className="font-display text-sm flex items-center gap-2">
             <PremiumIcon icon={BrainCircuit} theme="violet" size="sm" />
@@ -94,8 +94,8 @@ export function DashboardRight() {
       </Card>
 
       {/* Micro Challenge */}
-      <Card className="glass-card-premium overflow-hidden">
-        <div className="h-0.5 bg-gradient-to-r from-chart-teal to-chart-emerald" />
+      <Card className="glass-card-premium overflow-hidden hover-float">
+        <div className="h-0.5 bg-gradient-to-r from-chart-teal to-chart-emerald animate-shimmer bg-[length:200%_100%]" />
         <CardHeader className="pb-2">
           <CardTitle className="font-display text-sm flex items-center gap-2">
             <PremiumIcon icon={Rocket} theme="teal" size="sm" />

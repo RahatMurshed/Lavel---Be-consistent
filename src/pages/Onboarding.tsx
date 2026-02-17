@@ -125,9 +125,15 @@ const Onboarding = () => {
     }
   };
 
+  const stepVariants = {
+    enter: { opacity: 0, x: 20 },
+    center: { opacity: 1, x: 0, transition: { type: "spring" as const, stiffness: 300, damping: 30 } },
+    exit: { opacity: 0, x: -20 },
+  };
+
   const steps = [
     // Step 0: Welcome
-    <motion.div key="welcome" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="text-center space-y-6">
+    <motion.div key="welcome" variants={stepVariants} initial="enter" animate="center" exit="exit" className="text-center space-y-6">
       <BrandMark size="lg" animated className="mx-auto mb-2" />
       <h2 className="text-3xl font-display font-bold">
         Let's build your <span className="gradient-text">identity system</span>
@@ -141,7 +147,7 @@ const Onboarding = () => {
     </motion.div>,
 
     // Step 1: Identity
-    <motion.div key="identity" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+    <motion.div key="identity" variants={stepVariants} initial="enter" animate="center" exit="exit" className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-display font-bold">
           Who are you <span className="gradient-text">becoming</span>?
@@ -156,7 +162,7 @@ const Onboarding = () => {
               key={id.label}
               onClick={() => toggleIdentity(id.label)}
               whileTap={{ scale: 0.97 }}
-              className={`p-4 rounded-xl border text-left transition-all duration-200 ${
+              className={`p-4 rounded-xl border text-left transition-all duration-200 hover-float ${
                 selected
                   ? "border-primary/60 bg-primary/10 ring-1 ring-primary/30 scale-[1.02]"
                   : "border-border/30 bg-secondary/20 hover:border-primary/30 hover:bg-secondary/30"
@@ -178,7 +184,7 @@ const Onboarding = () => {
     </motion.div>,
 
     // Step 2: Outcomes
-    <motion.div key="outcomes" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+    <motion.div key="outcomes" variants={stepVariants} initial="enter" animate="center" exit="exit" className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-display font-bold">
           What are your <span className="gradient-text">goals</span>?
@@ -212,7 +218,7 @@ const Onboarding = () => {
         <Button
           onClick={generateHabits}
           disabled={generating || !outcomes.some((o) => o.trim())}
-          className="btn-gradient rounded-xl"
+          className={`btn-gradient rounded-xl ${generating ? "animate-shimmer bg-[length:200%_100%]" : ""}`}
         >
           {generating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
           {generating ? "Generating..." : "Generate Habits"}
@@ -221,7 +227,7 @@ const Onboarding = () => {
     </motion.div>,
 
     // Step 3: Review
-    <motion.div key="review" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+    <motion.div key="review" variants={stepVariants} initial="enter" animate="center" exit="exit" className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-display font-bold">
           Your <span className="gradient-text">Habit Stack</span>
@@ -230,23 +236,30 @@ const Onboarding = () => {
       </div>
       <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
         {habits.map((h, i) => (
-          <Card key={i} className="glass-card-premium">
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">{h.name}</p>
-                  <div className="mt-2 space-y-1">
-                    <p className="text-xs"><span className="text-success">Full:</span> <span className="text-muted-foreground">{h.full_version}</span></p>
-                    <p className="text-xs"><span className="text-chart-amber">Min:</span> <span className="text-muted-foreground">{h.min_version}</span></p>
-                    {h.cue_trigger && <p className="text-xs"><span className="text-chart-blue">Cue:</span> <span className="text-muted-foreground">{h.cue_trigger}</span></p>}
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08 }}
+          >
+            <Card className="glass-card-premium hover-float">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">{h.name}</p>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs"><span className="text-success">Full:</span> <span className="text-muted-foreground">{h.full_version}</span></p>
+                      <p className="text-xs"><span className="text-chart-amber">Min:</span> <span className="text-muted-foreground">{h.min_version}</span></p>
+                      {h.cue_trigger && <p className="text-xs"><span className="text-chart-blue">Cue:</span> <span className="text-muted-foreground">{h.cue_trigger}</span></p>}
+                    </div>
                   </div>
+                  <Button variant="ghost" size="icon" onClick={() => removeHabit(i)} className="text-muted-foreground hover:text-destructive">
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => removeHabit(i)} className="text-muted-foreground hover:text-destructive">
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
       </div>
       <div className="flex justify-between">
@@ -262,7 +275,7 @@ const Onboarding = () => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden neon-grid-bg">
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse-glow" />
       <div className="absolute bottom-1/4 right-1/3 w-72 h-72 bg-chart-teal/8 rounded-full blur-[100px]" />
 
@@ -270,10 +283,12 @@ const Onboarding = () => {
         {/* Progress */}
         <div className="flex gap-2 mb-8 justify-center">
           {[0, 1, 2, 3].map((s) => (
-            <div
+            <motion.div
               key={s}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                s <= step ? "w-10 bg-gradient-to-r from-primary to-chart-blue" : "w-6 bg-secondary"
+              animate={{ width: s <= step ? 40 : 24 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className={`h-1.5 rounded-full ${
+                s <= step ? "bg-gradient-to-r from-primary to-chart-blue" : "bg-secondary"
               }`}
             />
           ))}

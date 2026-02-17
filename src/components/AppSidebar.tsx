@@ -55,7 +55,7 @@ export function AppSidebar() {
                   const gradientClass = IDENTITY_COLORS[identity.color || "violet"] || IDENTITY_COLORS.violet;
                   const habitCount = identity.habits?.length || 0;
                   return (
-                    <div key={identity.id} className="glass-card-premium p-3 space-y-2">
+                    <div key={identity.id} className="glass-card-premium hover-float p-3 space-y-2">
                       <div className="flex items-center gap-2">
                         <div className={`h-6 w-6 rounded-md bg-gradient-to-br ${gradientClass} flex items-center justify-center text-white text-[10px] font-bold`}>
                           {identity.emoji || identity.label.charAt(0)}
@@ -65,7 +65,7 @@ export function AppSidebar() {
                       </div>
                       <div className="h-1 rounded-full bg-secondary/60 overflow-hidden">
                         <div
-                          className={`h-full rounded-full bg-gradient-to-r ${gradientClass} transition-all duration-500`}
+                          className={`h-full rounded-full bg-gradient-to-r ${gradientClass} transition-all duration-700`}
                           style={{ width: `${identity.alignment_pct || 0}%` }}
                         />
                       </div>
@@ -92,7 +92,7 @@ export function AppSidebar() {
                       to={item.url}
                       end={item.url === "/dashboard"}
                       className="hover:bg-sidebar-accent/50 transition-colors rounded-lg"
-                      activeClassName="bg-sidebar-accent text-primary font-medium"
+                      activeClassName="bg-sidebar-accent text-primary font-medium border-l-2 border-primary"
                     >
                       <item.icon className="h-4 w-4 mr-2" />
                       <span>{item.title}</span>
