@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Brain, Sparkles, Sun } from "lucide-react";
+import { BrainCircuit, Rocket, Sunrise } from "lucide-react";
 import { useTodayCheckin, useSubmitCheckin } from "@/hooks/useDailyCheckin";
 import { useActiveHabits } from "@/hooks/useHabits";
+import { PremiumIcon } from "@/components/ui/PremiumIcon";
 import { toast } from "sonner";
 
 export function DashboardRight() {
@@ -22,7 +23,6 @@ export function DashboardRight() {
     );
   };
 
-  // Simple micro-challenge from a random habit
   const randomHabit = habits && habits.length > 0
     ? habits[Math.floor(Math.random() * habits.length)]
     : null;
@@ -32,10 +32,11 @@ export function DashboardRight() {
   return (
     <aside className="hidden lg:block w-80 border-l border-border/50 overflow-y-auto p-4 space-y-4">
       {/* Morning Check-in */}
-      <Card className="glass-card border-chart-amber/20">
+      <Card className="glass-card-premium overflow-hidden">
+        <div className="h-0.5 bg-gradient-to-r from-chart-amber to-chart-rose" />
         <CardHeader className="pb-2">
           <CardTitle className="font-display text-sm flex items-center gap-2">
-            <Sun className="h-4 w-4 text-chart-amber" />
+            <PremiumIcon icon={Sunrise} theme="amber" size="sm" />
             Morning Check-in
           </CardTitle>
         </CardHeader>
@@ -57,9 +58,9 @@ export function DashboardRight() {
                     key={i}
                     onClick={() => handleCheckin(i + 1)}
                     disabled={submitCheckin.isPending}
-                    className={`flex-1 h-6 rounded-sm transition-colors text-[10px] ${
+                    className={`flex-1 h-7 rounded-md transition-all duration-200 text-[10px] font-medium ${
                       selectedEnergy === i + 1
-                        ? "bg-primary text-primary-foreground"
+                        ? "bg-primary text-primary-foreground scale-110"
                         : "bg-secondary/50 hover:bg-primary/30 text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -73,10 +74,11 @@ export function DashboardRight() {
       </Card>
 
       {/* AI Reflection */}
-      <Card className="glass-card">
+      <Card className="glass-card-premium overflow-hidden">
+        <div className="h-0.5 bg-gradient-to-r from-primary to-chart-blue" />
         <CardHeader className="pb-2">
           <CardTitle className="font-display text-sm flex items-center gap-2">
-            <Brain className="h-4 w-4 text-primary" />
+            <PremiumIcon icon={BrainCircuit} theme="violet" size="sm" />
             AI Mirror
           </CardTitle>
         </CardHeader>
@@ -92,10 +94,11 @@ export function DashboardRight() {
       </Card>
 
       {/* Micro Challenge */}
-      <Card className="glass-card border-chart-teal/20">
+      <Card className="glass-card-premium overflow-hidden">
+        <div className="h-0.5 bg-gradient-to-r from-chart-teal to-chart-emerald" />
         <CardHeader className="pb-2">
           <CardTitle className="font-display text-sm flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-chart-teal" />
+            <PremiumIcon icon={Rocket} theme="teal" size="sm" />
             Micro Challenge
           </CardTitle>
         </CardHeader>

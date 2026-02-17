@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Zap, ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
+import { BrandMark } from "@/components/ui/BrandMark";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -67,14 +68,14 @@ const Auth = () => {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-2">
-            <Zap className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-display font-bold text-foreground">Lavel</h1>
+          <div className="inline-flex items-center gap-3 mb-3">
+            <BrandMark size="lg" animated />
+            <h1 className="text-4xl font-display font-bold gradient-text tracking-tight">Lavel</h1>
           </div>
           <p className="text-muted-foreground text-sm">Your Consistency Operating System</p>
         </div>
 
-        <Card className="glass-card border-border/50">
+        <Card className="glass-card-premium border-border/50">
           <CardHeader className="text-center">
             <CardTitle className="font-display text-xl">
               {isLogin ? "Welcome back" : "Start your journey"}
@@ -125,7 +126,7 @@ const Auth = () => {
               </div>
               <Button
                 type="submit"
-                className="w-full glow-primary"
+                className="w-full btn-gradient rounded-lg font-medium"
                 disabled={loading}
               >
                 {loading ? (

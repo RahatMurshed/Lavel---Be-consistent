@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Flame, Target, AlertTriangle } from "lucide-react";
+import { Flame, ShieldAlert, Check, Minus, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useActiveHabits, useTodayLogs, useLogHabit, useRecentLogs } from "@/hooks/useHabits";
 import { useConsistencyScore } from "@/hooks/useConsistencyScore";
@@ -9,7 +9,8 @@ import { ConsistencyGauge } from "./ConsistencyGauge";
 import { MomentumChart } from "./MomentumChart";
 import { FrictionModal } from "./FrictionModal";
 import { FrictionSummary } from "./FrictionSummary";
-import { format, subDays, parseISO } from "date-fns";
+import { PremiumIcon } from "@/components/ui/PremiumIcon";
+import { format, subDays } from "date-fns";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
@@ -24,7 +25,7 @@ function useStreak() {
     for (let i = 0; i < 60; i++) {
       const d = format(subDays(new Date(), i), "yyyy-MM-dd");
       if (completed.has(d)) streak++;
-      else if (i > 0) break; // allow today to not be completed yet
+      else if (i > 0) break;
       else continue;
     }
     return streak;
@@ -85,7 +86,6 @@ export function DashboardCenter() {
     });
   };
 
-  // Adaptive mode from energy
   const energy = checkin?.energy;
   const isLowEnergy = energy !== undefined && energy !== null && energy <= 3;
   const isHighEnergy = energy !== undefined && energy !== null && energy >= 7;
@@ -96,17 +96,16 @@ export function DashboardCenter() {
     <main className="flex-1 overflow-y-auto p-6 space-y-6">
       {/* Stats Row */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="glass-card glow-primary">
+        <Card className="glass-card-premium glow-primary">
           <CardContent className="p-4">
             <ConsistencyGauge />
           </CardContent>
         </Card>
 
-        <Card className="glass-card">
+        <Card className="glass-card-premium overflow-hidden">
+          <div className="h-0.5 bg-gradient-to-r from-chart-teal to-chart-emerald" />
           <CardContent className="p-4 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-lg bg-chart-teal/20 flex items-center justify-center">
-              <Target className="h-6 w-6 text-chart-teal" />
-            </div>
+            <PremiumIcon icon={Flame} theme="teal" size="lg" />
             <div>
               <p className="text-2xl font-display font-bold text-foreground">{streak}</p>
               <p className="text-xs text-muted-foreground">Day Streak</p>
@@ -114,11 +113,10 @@ export function DashboardCenter() {
           </CardContent>
         </Card>
 
-        <Card className="glass-card">
+        <Card className="glass-card-premium overflow-hidden">
+          <div className="h-0.5 bg-gradient-to-r from-chart-amber to-chart-rose" />
           <CardContent className="p-4 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-lg bg-chart-amber/20 flex items-center justify-center">
-              <AlertTriangle className="h-6 w-6 text-chart-amber" />
-            </div>
+            <PremiumIcon icon={ShieldAlert} theme="amber" size="lg" />
             <div>
               <p className={`text-2xl font-display font-bold ${burnoutColor}`}>{burnoutRisk}</p>
               <p className="text-xs text-muted-foreground">Burnout Risk</p>
@@ -128,9 +126,12 @@ export function DashboardCenter() {
       </motion.div>
 
       {/* Momentum Curve */}
-      <Card className="glass-card">
+      <Card className="glass-card-premium">
         <CardHeader>
-          <CardTitle className="font-display text-lg">Momentum Curve</CardTitle>
+          <CardTitle className="font-display text-lg flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            Momentum Curve
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <MomentumChart />
@@ -138,12 +139,13 @@ export function DashboardCenter() {
       </Card>
 
       {/* Today's Habits */}
-      <Card className="glass-card">
+      <Card className="glass-card-premium">
         <CardHeader>
           <CardTitle className="font-display text-lg flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             Today's Habits
-            {isLowEnergy && <span className="text-xs font-normal text-chart-amber bg-chart-amber/10 px-2 py-0.5 rounded-full">Low Energy Mode</span>}
-            {isHighEnergy && <span className="text-xs font-normal text-success bg-success/10 px-2 py-0.5 rounded-full">Full Power</span>}
+            {isLowEnergy && <span className="text-xs font-normal text-chart-amber bg-chart-amber/10 px-2 py-0.5 rounded-full ml-2">Low Energy Mode</span>}
+            {isHighEnergy && <span className="text-xs font-normal text-success bg-success/10 px-2 py-0.5 rounded-full ml-2">Full Power</span>}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -158,10 +160,10 @@ export function DashboardCenter() {
               return (
                 <div
                   key={habit.id}
-                  className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                  className={`flex items-center justify-between p-3 rounded-xl border transition-all duration-200 ${
                     logged
-                      ? "bg-secondary/10 border-border/20 opacity-70"
-                      : "bg-secondary/30 border-border/30 hover:border-primary/30"
+                      ? "bg-secondary/10 border-border/20 opacity-60"
+                      : "bg-secondary/20 border-border/30 hover:border-primary/30 hover:bg-secondary/30"
                   }`}
                 >
                   <div>
@@ -169,7 +171,7 @@ export function DashboardCenter() {
                       {identity?.emoji && <span className="text-sm">{identity.emoji}</span>}
                       <p className="text-sm font-medium text-foreground">{habit.name}</p>
                       {logged && (
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
                           logged === "full" ? "bg-success/20 text-success" : logged === "min" ? "bg-chart-amber/20 text-chart-amber" : "bg-destructive/20 text-destructive"
                         }`}>
                           {logged}
@@ -184,33 +186,36 @@ export function DashboardCenter() {
                     )}
                   </div>
                   {!logged && (
-                    <div className="flex gap-2">
-                      <button
+                    <div className="flex gap-1.5">
+                      <motion.button
+                        whileTap={{ scale: 0.92 }}
                         onClick={() => handleLog(habit.id, habit.name, "full")}
-                        className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                           isLowEnergy
                             ? "bg-secondary/30 text-muted-foreground hover:bg-success/20 hover:text-success"
-                            : "bg-success/20 text-success hover:bg-success/30"
+                            : "bg-success/15 text-success hover:bg-success/25"
                         }`}
                       >
-                        Full ✓
-                      </button>
-                      <button
+                        <Check className="h-3 w-3" /> Full
+                      </motion.button>
+                      <motion.button
+                        whileTap={{ scale: 0.92 }}
                         onClick={() => handleLog(habit.id, habit.name, "min")}
-                        className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                           isLowEnergy
-                            ? "bg-chart-amber/20 text-chart-amber hover:bg-chart-amber/30 ring-1 ring-chart-amber/30"
-                            : "bg-chart-amber/20 text-chart-amber hover:bg-chart-amber/30"
+                            ? "bg-chart-amber/15 text-chart-amber hover:bg-chart-amber/25 ring-1 ring-chart-amber/20"
+                            : "bg-chart-amber/15 text-chart-amber hover:bg-chart-amber/25"
                         }`}
                       >
-                        Min ✓
-                      </button>
-                      <button
+                        <Minus className="h-3 w-3" /> Min
+                      </motion.button>
+                      <motion.button
+                        whileTap={{ scale: 0.92 }}
                         onClick={() => handleLog(habit.id, habit.name, "miss")}
-                        className="px-3 py-1 rounded-md text-xs font-medium bg-destructive/20 text-destructive hover:bg-destructive/30 transition-colors"
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-destructive/15 text-destructive hover:bg-destructive/25 transition-all"
                       >
-                        Miss ✗
-                      </button>
+                        <X className="h-3 w-3" /> Miss
+                      </motion.button>
                     </div>
                   )}
                 </div>
