@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Identity from "./pages/Identity";
+import Habits from "./pages/Habits";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/identity" element={<Identity />} />
+          <Route path="/dashboard/habits" element={<Habits />} />
           <Route path="/dashboard/*" element={<Dashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
