@@ -216,7 +216,7 @@ export function ConsistencyCoach() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 1.0 }}
             className="space-y-4"
           >
             {/* Overall Assessment */}
@@ -235,7 +235,7 @@ export function ConsistencyCoach() {
 
             {/* Strength & Focus */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <motion.div initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
+              <motion.div initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.8 }}>
                 <Card className="glass-card-premium overflow-hidden h-full hover-float">
                   <div className="h-0.5 bg-gradient-to-r from-chart-teal to-chart-emerald" />
                   <CardHeader className="pb-2">
@@ -250,7 +250,7 @@ export function ConsistencyCoach() {
                 </Card>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
+              <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.8 }}>
                 <Card className="glass-card-premium overflow-hidden h-full hover-float">
                   <div className="h-0.5 bg-gradient-to-r from-chart-amber to-chart-rose" />
                   <CardHeader className="pb-2">
@@ -267,7 +267,7 @@ export function ConsistencyCoach() {
             </div>
 
             {/* Action Items */}
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8 }}>
               <Card className="glass-card-premium overflow-hidden">
                 <div className="h-0.5 bg-gradient-to-r from-primary to-chart-violet" />
                 <CardHeader className="pb-2">
