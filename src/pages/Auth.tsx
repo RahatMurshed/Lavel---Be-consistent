@@ -46,10 +46,7 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        toast({
-          title: "Check your email",
-          description: "We sent you a confirmation link to verify your account.",
-        });
+        navigate("/dashboard");
       }
     } catch (error: any) {
       toast({
