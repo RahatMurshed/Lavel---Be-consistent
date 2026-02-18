@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { useIdentityAlignment } from "@/hooks/useIdentityAlignment";
 import { useDeleteIdentity } from "@/hooks/useHabits";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,27 +19,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
-const IDENTITY_GRADIENTS: Record<string, string> = {
-  violet: "from-[hsl(258,62%,63%)] to-[hsl(215,70%,62%)]",
-  teal: "from-[hsl(172,50%,55%)] to-[hsl(152,55%,52%)]",
-  amber: "from-[hsl(38,85%,65%)] to-[hsl(350,65%,65%)]",
-  rose: "from-[hsl(350,65%,65%)] to-[hsl(258,62%,63%)]",
-  blue: "from-[hsl(215,70%,62%)] to-[hsl(172,50%,55%)]",
-  emerald: "from-[hsl(152,55%,52%)] to-[hsl(172,50%,55%)]",
-};
-
-const PROGRESS_COLORS: Record<string, string> = {
-  violet: "bg-chart-violet",
-  teal: "bg-chart-teal",
-  amber: "bg-chart-amber",
-  rose: "bg-chart-rose",
-  blue: "bg-chart-blue",
-  emerald: "bg-chart-emerald",
-};
-
 const cardFade = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.8 } },
 };
 
 export function IdentityAlignmentDashboard() {
@@ -96,39 +77,64 @@ export function IdentityAlignmentDashboard() {
         <motion.div
           initial="hidden"
           animate="show"
-          variants={{ show: { transition: { staggerChildren: 0.1 } } }}
+          variants={{ show: { transition: { staggerChildren: 0.15 } } }}
           className="space-y-4"
         >
           {alignments.map((identity) => {
-            const gradient = IDENTITY_GRADIENTS[identity.color || "violet"] || IDENTITY_GRADIENTS.violet;
-            const progressColor = PROGRESS_COLORS[identity.color || "violet"] || PROGRESS_COLORS.violet;
             const isExpanded = expanded === identity.id;
+            const pct = identity.alignmentPct;
 
             return (
               <motion.div key={identity.id} variants={cardFade}>
-                <Card className="glass-card-premium overflow-hidden hover-float">
-                  <div className={`h-1 bg-gradient-to-r ${gradient}`} />
+                <Card className="glass-card-premium overflow-hidden hover-float group">
+                  {/* Top accent line — unified primary gradient */}
+                  <div className="h-[2px] bg-gradient-to-r from-primary/60 via-primary to-primary/60" />
+
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-lg shadow-lg`}>
-                          {identity.emoji || identity.label.charAt(0)}
+                      <div className="flex items-center gap-4">
+                        {/* Alignment percentage as the main visual element */}
+                        <div className="relative h-14 w-14 flex-shrink-0">
+                          <svg viewBox="0 0 48 48" className="h-14 w-14 -rotate-90">
+                            <circle
+                              cx="24" cy="24" r="20"
+                              fill="none"
+                              stroke="hsl(var(--secondary))"
+                              strokeWidth="3"
+                            />
+                            <motion.circle
+                              cx="24" cy="24" r="20"
+                              fill="none"
+                              stroke="hsl(var(--primary))"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeDasharray={`${2 * Math.PI * 20}`}
+                              initial={{ strokeDashoffset: 2 * Math.PI * 20 }}
+                              animate={{ strokeDashoffset: 2 * Math.PI * 20 * (1 - pct / 100) }}
+                              transition={{ duration: 1.2, ease: "easeOut" }}
+                              className="drop-shadow-[0_0_6px_hsl(var(--primary)/0.4)]"
+                            />
+                          </svg>
+                          <span className="absolute inset-0 flex items-center justify-center font-display text-sm font-bold text-primary">
+                            {pct}%
+                          </span>
                         </div>
+
                         <div>
-                          <CardTitle className="font-display text-lg">{identity.label}</CardTitle>
-                          <p className="text-xs text-muted-foreground">
+                          <CardTitle className="font-display text-lg text-foreground">
+                            {identity.label}
+                          </CardTitle>
+                          <p className="text-xs text-muted-foreground mt-0.5">
                             {identity.habitCount} habit{identity.habitCount !== 1 ? "s" : ""} · {identity.totalVotes} votes
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`font-display text-2xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>
-                          {identity.alignmentPct}%
-                        </span>
+
+                      <div className="flex items-center gap-2">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <button
-                              className="p-1.5 rounded-lg bg-destructive/10 hover:bg-destructive/20 text-destructive transition-colors"
+                              className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 bg-destructive/10 hover:bg-destructive/20 text-destructive transition-all duration-300"
                               title="Delete identity"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -136,7 +142,7 @@ export function IdentityAlignmentDashboard() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete {identity.label}?</AlertDialogTitle>
+                              <AlertDialogTitle>Delete "{identity.label}"?</AlertDialogTitle>
                               <AlertDialogDescription>
                                 Linked habits will be kept but unlinked from this identity. This action cannot be undone.
                               </AlertDialogDescription>
@@ -146,7 +152,7 @@ export function IdentityAlignmentDashboard() {
                               <AlertDialogAction
                                 onClick={() => {
                                   deleteIdentity.mutate(identity.id, {
-                                    onSuccess: () => toast.success(`"${identity.label}" identity deleted`),
+                                    onSuccess: () => toast.success(`"${identity.label}" deleted`),
                                     onError: () => toast.error("Failed to delete identity"),
                                   });
                                 }}
@@ -159,36 +165,26 @@ export function IdentityAlignmentDashboard() {
                         </AlertDialog>
                         <button
                           onClick={() => setExpanded(isExpanded ? null : identity.id)}
-                          className="p-1.5 rounded-lg bg-secondary/30 hover:bg-secondary/50 text-muted-foreground transition-colors"
+                          className="p-1.5 rounded-lg bg-secondary/30 hover:bg-secondary/50 text-muted-foreground transition-colors duration-300"
                         >
                           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </button>
                       </div>
                     </div>
                   </CardHeader>
+
                   <CardContent className="pb-4">
-                    {/* Main alignment bar */}
-                    <div className="space-y-2">
-                      <div className="h-2.5 rounded-full bg-secondary/40 overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${identity.alignmentPct}%` }}
-                          transition={{ duration: 0.8, ease: "easeOut" }}
-                          className={`h-full rounded-full ${progressColor}`}
-                        />
-                      </div>
-                      {/* Vote breakdown */}
-                      <div className="flex gap-4 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Check className="h-3 w-3 text-success" /> {identity.fullVotes} full
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Minus className="h-3 w-3 text-chart-amber" /> {identity.minVotes} min
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <X className="h-3 w-3 text-destructive" /> {identity.missVotes} miss
-                        </span>
-                      </div>
+                    {/* Vote breakdown — minimal pills */}
+                    <div className="flex gap-3 text-xs">
+                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 text-success">
+                        <Check className="h-3 w-3" /> {identity.fullVotes} full
+                      </span>
+                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-warning/10 text-warning">
+                        <Minus className="h-3 w-3" /> {identity.minVotes} min
+                      </span>
+                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/10 text-destructive">
+                        <X className="h-3 w-3" /> {identity.missVotes} miss
+                      </span>
                     </div>
 
                     {/* Expanded habit breakdown */}
@@ -198,7 +194,7 @@ export function IdentityAlignmentDashboard() {
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3 }}
+                          transition={{ duration: 0.4 }}
                           className="overflow-hidden"
                         >
                           <div className="mt-4 pt-4 border-t border-border/30 space-y-3">
@@ -209,7 +205,7 @@ export function IdentityAlignmentDashboard() {
                                 <div key={habit.id} className="space-y-1.5">
                                   <div className="flex items-center justify-between">
                                     <span className="text-sm text-foreground">{habit.name}</span>
-                                    <span className="text-xs font-medium text-muted-foreground">
+                                    <span className="text-xs font-medium text-primary">
                                       {habit.alignmentPct}%
                                     </span>
                                   </div>
@@ -217,15 +213,15 @@ export function IdentityAlignmentDashboard() {
                                     <motion.div
                                       initial={{ width: 0 }}
                                       animate={{ width: `${habit.alignmentPct}%` }}
-                                      transition={{ duration: 0.6, ease: "easeOut" }}
-                                      className={`h-full rounded-full ${progressColor} opacity-70`}
+                                      transition={{ duration: 0.8, ease: "easeOut" }}
+                                      className="h-full rounded-full bg-primary/70"
                                     />
                                   </div>
                                   <div className="flex gap-3 text-[10px] text-muted-foreground">
                                     <span>{habit.fullVotes} full</span>
                                     <span>{habit.minVotes} min</span>
                                     <span>{habit.missVotes} miss</span>
-                                    <span className="ml-auto">{habit.totalVotes} total votes</span>
+                                    <span className="ml-auto">{habit.totalVotes} total</span>
                                   </div>
                                 </div>
                               ))
