@@ -1,97 +1,79 @@
 
+# Add To-Do List and Add Identity Features
 
-# Add In-App Feature Guide and Workflow Walkthrough
+## Overview
 
-## Problem
+Two new features for the Dashboard area:
 
-After onboarding, new users land on the Dashboard with 7 navigation items (Dashboard, Identity, Habits, Skills, Analytics, AI Mirror, Groups) and multiple widgets (Drift Monitor, Morning Check-in, Micro Challenge) -- but there's zero explanation of what anything does or how features connect. Users are left guessing.
+1. **To-Do List** -- A personal task list widget on the Dashboard for quick daily tasks (separate from habits)
+2. **Add Identity** -- Allow users to create new identities directly from the Identity page (currently only possible during onboarding)
 
-## Solution: Two-Part Guidance System
+---
 
-### Part 1: Post-Onboarding Feature Tour (First-Time Only)
+## Feature 1: To-Do List
 
-A step-by-step guided walkthrough that appears once -- right after onboarding completes and the user reaches the Dashboard for the first time.
+### Database
+Create a new `todos` table:
+- `id` (uuid, primary key)
+- `user_id` (uuid, not null)
+- `title` (text, not null)
+- `completed` (boolean, default false)
+- `created_at` (timestamptz, default now())
+- `completed_at` (timestamptz, nullable)
 
-**How it works:**
-- A modal/spotlight overlay walks through 5-6 key areas
-- Each step highlights a UI element and explains its purpose in plain language
-- User clicks "Next" to proceed or "Skip" to dismiss
-- A `tour_completed` flag on the `profiles` table prevents it from showing again
+RLS policy: Users can only CRUD their own todos.
 
-**Tour Steps:**
-1. **Dashboard** -- "This is your daily command center. Log your habits here each day."
-2. **Morning Check-in** -- "Rate your energy each morning. The app adapts your targets based on how you feel."
-3. **Identity sidebar** -- "These are the identities you chose. The % shows how aligned your actions are."
-4. **Habits page** -- "Manage your habit stack. Each habit has a Full version and a Minimum version for low-energy days."
-5. **Analytics** -- "Your performance report. See completion rates, streaks, and trends over any time period."
-6. **AI Mirror** -- "Get AI-powered reflections on your consistency patterns and personalized coaching."
+### New Hook: `src/hooks/useTodos.ts`
+- `useTodos()` -- fetch all todos for the current user, ordered by created_at desc
+- `useAddTodo()` -- insert a new todo
+- `useToggleTodo()` -- toggle completed status
+- `useDeleteTodo()` -- remove a todo
 
-### Part 2: Persistent "How It Works" Help Panel
+### UI: To-Do Card in Dashboard Center
+Add a new card below the "Today's Habits" section in `DashboardCenter.tsx`:
+- Card title: "To-Do List" with a list icon
+- Input field at top to type a new task and press Enter to add
+- Each todo shows a checkbox, title text, and a delete button
+- Completed todos get a strikethrough style and move to the bottom
+- Simple, clean, professional look matching the existing glass-card design
 
-A small help button (?) in the header that opens a quick-reference drawer/dialog explaining:
+---
 
-- **The Workflow**: Identity -> Habits -> Daily Logging -> Analytics -> AI Coaching
-- **Key Concepts**: What "Full vs Min" means, what Consistency Score measures, what Identity Drift is
-- **Page Descriptions**: One-liner for each nav item
+## Feature 2: Add Identity
 
-This is always accessible, not just on first visit.
+### No Database Changes
+The `identities` table already supports inserting new rows with `user_id`, `label`, `emoji`, and `color`.
+
+### New Component: `src/components/dashboard/AddIdentityForm.tsx`
+A small form (inline or dialog) with:
+- **Label** text input (required) -- e.g., "Athlete", "Creator"
+- **Emoji** picker -- a simple grid of common emojis or text input
+- **Color** selector -- choose from the existing color options (violet, teal, amber, rose, blue, emerald)
+- Submit button to insert into the `identities` table
+
+### New Hook Addition in `src/hooks/useHabits.ts`
+Add a `useCreateIdentity()` mutation that inserts into the `identities` table and invalidates the `["identities"]` query cache.
+
+### UI Integration in Identity Page
+Add an "Add Identity" button at the top of `IdentityAlignmentDashboard.tsx` (next to the header). Clicking it opens a dialog with the `AddIdentityForm`. On success, the new identity card appears in the list immediately.
 
 ---
 
 ## Technical Details
 
-### Database Change
-Add a `tour_completed` boolean column to the `profiles` table (default `false`). After the tour finishes or is skipped, set it to `true`.
-
 ### New Files
-
 | File | Purpose |
 |------|---------|
-| `src/components/dashboard/FeatureTour.tsx` | Step-by-step spotlight tour component using framer-motion for transitions. Renders a semi-transparent overlay with a highlighted card pointing to each feature area. |
-| `src/components/dashboard/HelpDrawer.tsx` | A sheet/drawer component triggered by a "?" button. Contains the workflow diagram, concept glossary, and page descriptions. |
+| `src/hooks/useTodos.ts` | CRUD hooks for todos table |
+| `src/components/dashboard/TodoList.tsx` | To-do list card component |
+| `src/components/dashboard/AddIdentityForm.tsx` | Identity creation form in a dialog |
 
 ### Modified Files
-
 | File | Change |
 |------|--------|
-| `src/pages/Dashboard.tsx` | Import and render `FeatureTour` when `profile.tour_completed === false`. Add the "?" help button to the header. |
-| `src/components/DashboardLayout.tsx` | Add the "?" help button to the header for non-Dashboard pages. |
+| `src/components/dashboard/DashboardCenter.tsx` | Import and render `TodoList` below habits |
+| `src/hooks/useHabits.ts` | Add `useCreateIdentity()` mutation |
+| `src/components/dashboard/IdentityAlignmentDashboard.tsx` | Add "Add Identity" button and dialog |
 
-### Tour Component Design
-
-The `FeatureTour` will be a lightweight overlay component:
-- Uses a `step` state (0-5) to track progress
-- Each step shows a card with a title, description, and icon
-- Includes "Next", "Back", and "Skip Tour" buttons
-- On completion or skip, calls `supabase.from('profiles').update({ tour_completed: true })`
-- Uses framer-motion `AnimatePresence` for smooth step transitions
-- Does NOT use a third-party tour library -- built from scratch to match the existing glass-card design system
-
-### Help Drawer Content
-
-The help drawer will contain three sections:
-
-**Section 1 -- Your Workflow**
-A visual step-by-step:
-```
-Define Identity -> Build Habits -> Log Daily -> Review Analytics -> Get AI Coaching
-```
-
-**Section 2 -- Key Concepts**
-- **Full vs Min versions**: Full is the ideal version of a habit. Min is the bare minimum for low-energy days. Both count as completed.
-- **Consistency Score**: A multi-dimensional score based on completion ratio, trend stability, recovery speed, resilience, and energy alignment.
-- **Identity Drift**: When your recent habit completion drops significantly compared to your baseline, the app alerts you and generates a recovery plan.
-- **Morning Check-in**: Your daily energy level (1-10) determines whether the app suggests full or minimum habit versions.
-- **Friction Triggers**: When you miss a habit, you can log why. The app tracks these to identify patterns.
-
-**Section 3 -- Pages**
-- **Dashboard**: Daily overview with momentum chart, consistency gauge, and habit logging
-- **Identity**: Manage your chosen identities and see alignment percentages
-- **Habits**: Add, edit, reorder, and manage your full habit stack
-- **Skills**: Track skills you are learning (independent of habits)
-- **Analytics**: Professional performance report with charts, tables, and AI insights
-- **AI Mirror**: AI-powered weekly reflections and consistency coaching
-- **Groups**: Join or create accountability groups with team challenges
-
-### No New Dependencies
-Everything built with existing tools: framer-motion for animations, Radix Sheet for the drawer, and Tailwind for styling.
+### Database Migration
+One migration to create the `todos` table with RLS policies.
