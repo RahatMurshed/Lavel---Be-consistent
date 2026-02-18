@@ -4,6 +4,7 @@ import { Flame, ShieldAlert, Check, Minus, X, Rocket, Leaf, Gauge } from "lucide
 import { motion } from "framer-motion";
 import { useActiveHabits, useTodayLogs, useLogHabit, useRecentLogs } from "@/hooks/useHabits";
 import { useConsistencyScore } from "@/hooks/useConsistencyScore";
+import { useAwardXP } from "@/hooks/useGamification";
 import { useTodayCheckin } from "@/hooks/useDailyCheckin";
 import { useActiveSeasonalMode, MODE_META } from "@/hooks/useSeasonalMode";
 import { ConsistencyGauge } from "./ConsistencyGauge";
@@ -68,6 +69,7 @@ export function DashboardCenter() {
   const { data: checkin } = useTodayCheckin();
   const { data: seasonalMode } = useActiveSeasonalMode();
   const logHabit = useLogHabit();
+  const awardXP = useAwardXP();
   const score = useConsistencyScore();
   const streak = useStreak();
   const burnoutRisk = useBurnoutRisk();
@@ -86,8 +88,12 @@ export function DashboardCenter() {
       setFrictionModal({ open: true, habitId, habitName });
       return;
     }
+    const xp = status === "full" ? 20 : 10;
     logHabit.mutate({ habitId, status }, {
-      onSuccess: () => toast.success(getRandomToast(status as "full" | "min")),
+      onSuccess: () => {
+        awardXP.mutate({ source: `habit_${status}`, xpAmount: xp });
+        toast.success(`${getRandomToast(status as "full" | "min")} +${xp} XP`);
+      },
     });
   };
 

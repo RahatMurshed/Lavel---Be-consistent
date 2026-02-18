@@ -1,47 +1,34 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState, ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { DashboardCenter } from "@/components/dashboard/DashboardCenter";
-import { DashboardRight } from "@/components/dashboard/DashboardRight";
 import { XPBar } from "@/components/dashboard/XPBar";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandMark } from "@/components/ui/BrandMark";
 import type { User } from "@supabase/supabase-js";
 
-const Dashboard = () => {
+export function DashboardLayout({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setUser(session.user);
-      }
+      if (!session) navigate("/auth");
+      else setUser(session.user);
     });
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
+      if (!session) { navigate("/auth"); return; }
       setUser(session.user);
-
       const { data: profile } = await supabase
         .from("profiles")
         .select("onboarding_completed")
         .eq("user_id", session.user.id)
         .single();
-
-      if (!profile?.onboarding_completed) {
-        navigate("/onboarding");
-        return;
-      }
+      if (!profile?.onboarding_completed) { navigate("/onboarding"); return; }
       setLoading(false);
     });
 
@@ -80,14 +67,11 @@ const Dashboard = () => {
               </Button>
             </div>
           </header>
-          <div className="flex-1 flex overflow-hidden">
-            <DashboardCenter />
-            <DashboardRight />
+          <div className="flex-1 overflow-y-auto p-6">
+            {children}
           </div>
         </div>
       </div>
     </SidebarProvider>
   );
-};
-
-export default Dashboard;
+}
