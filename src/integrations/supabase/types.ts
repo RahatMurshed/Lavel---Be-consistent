@@ -389,6 +389,74 @@ export type Database = {
         }
         Relationships: []
       }
+      skill_milestones: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string
+          current_count: number | null
+          description: string | null
+          id: string
+          skill_id: string | null
+          target_count: number | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          current_count?: number | null
+          description?: string | null
+          id?: string
+          skill_id?: string | null
+          target_count?: number | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          current_count?: number | null
+          description?: string | null
+          id?: string
+          skill_id?: string | null
+          target_count?: number | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_milestones_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skill_recommendations: {
+        Row: {
+          generated_at: string
+          id: string
+          recommendations: Json
+          user_id: string
+        }
+        Insert: {
+          generated_at?: string
+          id?: string
+          recommendations?: Json
+          user_id: string
+        }
+        Update: {
+          generated_at?: string
+          id?: string
+          recommendations?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       skills: {
         Row: {
           category: string
