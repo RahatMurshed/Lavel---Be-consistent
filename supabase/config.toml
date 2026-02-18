@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.drift-corrective-plan]
 verify_jwt = false
+
+[functions.todo-suggester]
+verify_jwt = false
