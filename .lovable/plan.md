@@ -1,45 +1,54 @@
 
 
-# Delete Identity Feature
+# Disable Email Verification + Comprehensive Feature Tour
 
 ## Overview
 
-Add the ability to delete an identity from the Identity Alignment page, so users can remove identities they no longer align with or want to change.
+Two changes:
+
+1. **Disable email verification** so new signups can log in immediately (for testing)
+2. **Expand the Feature Tour** to cover all app features including the newer ones (Skills, Groups, Leaderboard, Seasonal Modes, Todos)
 
 ---
 
-## What happens when an identity is deleted
+## 1. Disable Email Verification
 
-- The identity row is removed from the `identities` table
-- Any habits linked to that identity will have their `identity_id` set to `null` (they become unlinked, not deleted)
-- Any drift alerts for that identity will also be deleted
-- The identity card disappears from the dashboard immediately
+### Auth Configuration
+- Use the `configure-auth` tool to enable auto-confirm for email signups so users skip the email verification step
+
+### Frontend Change (`src/pages/Auth.tsx`)
+- After successful signup, navigate directly to `/dashboard` instead of showing the "Check your email" toast
 
 ---
 
-## Changes
+## 2. Expanded Feature Tour
 
-### 1. New hook: `useDeleteIdentity` in `src/hooks/useHabits.ts`
+### Current Tour Steps (6 steps)
+The existing tour covers: Dashboard, Morning Check-in, Identity Alignment, Habits, Analytics, AI Mirror
 
-A mutation that:
-1. Unlinks all habits from the identity (`UPDATE habits SET identity_id = null WHERE identity_id = :id`)
-2. Deletes drift alerts for the identity (`DELETE FROM identity_drift_alerts WHERE identity_id = :id`)
-3. Deletes the identity row (`DELETE FROM identities WHERE id = :id`)
-4. Invalidates `identities`, `all-habits`, `active-habits`, and `identity-drift` query caches
+### Updated Tour Steps (10 steps)
+Add coverage for all features in the sidebar nav:
 
-### 2. Delete button on each identity card in `IdentityAlignmentDashboard.tsx`
+| Step | Icon | Title | Description |
+|------|------|-------|-------------|
+| 1 | LayoutDashboard | Dashboard | Daily command center for logging habits and tracking momentum |
+| 2 | Sun | Morning Check-in | Rate your energy; the app adapts habit versions accordingly |
+| 3 | Fingerprint | Identity Alignment | Track how your actions align with who you're becoming |
+| 4 | ListChecks | Habits | Manage your Full and Minimum habit versions |
+| 5 | BookOpen | Skills | Track skills you're learning and get AI recommendations |
+| 6 | BarChart3 | Analytics | Professional performance reports with trends and breakdowns |
+| 7 | Trophy | Leaderboard | Compete with others globally or within your groups |
+| 8 | Users | Groups | Join or create accountability groups with shared challenges |
+| 9 | Brain | AI Mirror | AI-powered reflections, coaching, and corrective plans |
+| 10 | Leaf | Seasonal Modes | Switch between Push, Maintain, and Recovery modes based on your life season |
 
-- Add a small `Trash2` icon button next to the expand/collapse chevron on each identity card
-- Clicking it opens a confirmation dialog (using the existing `AlertDialog` component) asking: "Delete [Identity Label]? Linked habits will be kept but unlinked from this identity."
-- On confirm, calls `useDeleteIdentity`
-- Shows a success toast on completion
-
-### Files Modified
+### File Changes
 
 | File | Change |
 |------|--------|
-| `src/hooks/useHabits.ts` | Add `useDeleteIdentity()` mutation |
-| `src/components/dashboard/IdentityAlignmentDashboard.tsx` | Add delete button with confirmation dialog on each identity card |
+| `src/pages/Auth.tsx` | On signup success, navigate to `/dashboard` instead of showing email confirmation toast |
+| `src/components/dashboard/FeatureTour.tsx` | Add 4 new tour steps for Skills, Leaderboard, Groups, and Seasonal Modes |
 
-No database migrations needed -- existing RLS policies already allow users to delete their own identities, habits updates, and drift alerts.
+### Auth Config
+- Auto-confirm email signups enabled via configure-auth tool
 
