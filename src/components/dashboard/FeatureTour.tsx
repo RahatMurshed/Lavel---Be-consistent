@@ -6,8 +6,12 @@ import {
   Sun,
   Fingerprint,
   ListChecks,
+  BookOpen,
   BarChart3,
+  Trophy,
+  Users,
   Brain,
+  Leaf,
   ChevronRight,
   ChevronLeft,
   X,
@@ -40,16 +44,40 @@ const TOUR_STEPS = [
       "Manage your habit stack. Each habit has a Full version (ideal) and a Minimum version (for low-energy days). Both count as completed.",
   },
   {
+    icon: BookOpen,
+    title: "Skills",
+    description:
+      "Track skills you're learning and get AI-powered recommendations for what to learn next based on your identities and goals.",
+  },
+  {
     icon: BarChart3,
     title: "Analytics",
     description:
       "Your professional performance report. See completion rates, streaks, trends, and detailed breakdowns over any time period.",
   },
   {
+    icon: Trophy,
+    title: "Leaderboard",
+    description:
+      "Compete with others globally or within your groups. Earn XP through consistency and climb the ranks.",
+  },
+  {
+    icon: Users,
+    title: "Groups",
+    description:
+      "Join or create accountability groups with shared challenges. Stay motivated together and track group progress.",
+  },
+  {
     icon: Brain,
     title: "AI Mirror",
     description:
       "Get AI-powered reflections on your consistency patterns, personalized coaching, and corrective plans when you drift.",
+  },
+  {
+    icon: Leaf,
+    title: "Seasonal Modes",
+    description:
+      "Switch between Push, Maintain, and Recovery modes based on your life season. The app adjusts expectations accordingly.",
   },
 ];
 
