@@ -1,16 +1,14 @@
 import { useState, useMemo, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useRecentLogs } from "@/hooks/useHabits";
-import { useSkills } from "@/hooks/useSkills";
-import { useGamification, getPrestigeLevel } from "@/hooks/useGamification";
+import { useActiveHabits, useAllHabits, useRecentLogs } from "@/hooks/useHabits";
+import { useSkills, SKILL_CATEGORIES } from "@/hooks/useSkills";
 import { useIdentityAlignment } from "@/hooks/useIdentityAlignment";
 import {
-  useXPTimeline, useEnergyMoodTrends, useFrictionAnalysis,
+  useEnergyMoodTrends, useFrictionAnalysis,
   useLatestConsistencyScores, useBestWorstDays, useStreakHeatmapData,
 } from "@/hooks/useAnalyticsData";
 import ConsistencyRadar from "@/components/analytics/ConsistencyRadar";
-import XPTimeline from "@/components/analytics/XPTimeline";
 import EnergyCorrelation from "@/components/analytics/EnergyCorrelation";
 import FrictionAnalysis from "@/components/analytics/FrictionAnalysis";
 import StreakHeatmap from "@/components/analytics/StreakHeatmap";
@@ -19,17 +17,21 @@ import BestWorstDays from "@/components/analytics/BestWorstDays";
 import AIInsights from "@/components/analytics/AIInsights";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell,
+  ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 import { motion } from "framer-motion";
 import {
-  TrendingUp, Flame, BookOpen, Zap, Calendar, ArrowUpRight,
+  TrendingUp, Flame, BookOpen, Calendar, ArrowUpRight,
   ArrowDownRight, Target, BarChart3, Activity, Shield, Printer,
+  Table as TableIcon,
 } from "lucide-react";
 import {
   format, subDays, eachDayOfInterval, startOfDay, eachWeekOfInterval,
   eachMonthOfInterval, endOfWeek, endOfMonth, isWithinInterval, parseISO,
 } from "date-fns";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
 
 const PERIODS = [
   { key: "week", label: "Weekly", days: 7, bucketLabel: "Day" },
@@ -59,10 +61,9 @@ export default function Analytics() {
   const { data: logs } = useRecentLogs(days);
   const { data: prevLogs } = useRecentLogs(days * 2);
   const { data: skills } = useSkills();
-  const { data: gamification } = useGamification();
+  const { data: allHabits } = useAllHabits();
 
-  // New analytics data
-  const { data: xpTimeline } = useXPTimeline(days);
+  // Analytics data
   const { data: checkins } = useEnergyMoodTrends(days);
   const { data: frictionData } = useFrictionAnalysis(days);
   const { data: consistencyScores } = useLatestConsistencyScores();
@@ -70,7 +71,7 @@ export default function Analytics() {
   const bestWorstDays = useBestWorstDays(logs);
   const heatmapData = useStreakHeatmapData(logs, days);
 
-  // Completion bucketed data (existing logic)
+  // Completion bucketed data
   const completionData = useMemo(() => {
     if (!logs) return [];
     const end = new Date();
@@ -135,13 +136,65 @@ export default function Analytics() {
 
   const periodSkills = skills?.filter((s) => isWithinInterval(parseISO(s.date_learned), { start: subDays(new Date(), days), end: new Date() })).length || 0;
 
-  const prestigeLevel = getPrestigeLevel(gamification?.total_xp || 0);
-  const currentStreak = gamification?.current_streak || 0;
-  const longestStreak = gamification?.longest_streak || 0;
+  // Streak from logs
+  const currentStreak = useMemo(() => {
+    if (!logs || logs.length === 0) return 0;
+    const completed = new Set(
+      logs.filter((l) => l.status === "full" || l.status === "min").map((l) => l.log_date)
+    );
+    let streak = 0;
+    for (let i = 0; i < 60; i++) {
+      const d = format(subDays(new Date(), i), "yyyy-MM-dd");
+      if (completed.has(d)) streak++;
+      else if (i > 0) break;
+      else continue;
+    }
+    return streak;
+  }, [logs]);
+
+  const longestStreak = useMemo(() => {
+    if (!logs || logs.length === 0) return 0;
+    const dates = [...new Set(logs.filter(l => l.status === "full" || l.status === "min").map(l => l.log_date))].sort();
+    let max = 0, cur = 1;
+    for (let i = 1; i < dates.length; i++) {
+      const diff = (new Date(dates[i]).getTime() - new Date(dates[i - 1]).getTime()) / 86400000;
+      if (diff === 1) cur++;
+      else cur = 1;
+      if (cur > max) max = cur;
+    }
+    return Math.max(max, cur);
+  }, [logs]);
+
   const overallConsistency = consistencyScores ? Number(consistencyScores.overall_score) : 0;
+  const activeHabitCount = allHabits?.filter(h => h.active).length || 0;
 
   const bestDay = bestWorstDays.reduce((best, d) => d.rate > best.rate ? d : best, { day: "-", rate: 0, total: 0 });
   const worstDay = bestWorstDays.filter((d) => d.total > 0).reduce((worst, d) => d.rate < worst.rate ? d : worst, { day: "-", rate: 100, total: 0 });
+
+  // Per-habit report data
+  const habitReport = useMemo(() => {
+    if (!allHabits || !logs) return [];
+    return allHabits.map((habit) => {
+      const habitLogs = logs.filter(l => l.habit_id === habit.id);
+      const full = habitLogs.filter(l => l.status === "full").length;
+      const min = habitLogs.filter(l => l.status === "min").length;
+      const miss = habitLogs.filter(l => l.status === "miss").length;
+      const total = full + min + miss;
+      const completionPct = total > 0 ? Math.round(((full + min) / total) * 100) : 0;
+      const identity = habit.identities;
+      return {
+        id: habit.id,
+        name: habit.name,
+        active: habit.active,
+        identity: identity ? `${identity.emoji || ""} ${identity.label}` : "—",
+        full,
+        min,
+        miss,
+        total,
+        completionPct,
+      };
+    }).sort((a, b) => b.total - a.total);
+  }, [allHabits, logs]);
 
   return (
     <div className="space-y-6 print:space-y-4" ref={reportRef}>
@@ -173,48 +226,142 @@ export default function Analytics() {
         </div>
       </div>
 
-      {/* Section A: Summary Stats */}
+      {/* Summary Stats */}
       <motion.div key={period} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-2 lg:grid-cols-6 gap-3">
         <StatCard icon={TrendingUp} label="Avg Completion" value={`${avgRate}%`} color="text-primary" delta={rateDelta} deltaLabel="vs prev" />
         <StatCard icon={Flame} label="Current Streak" value={`${currentStreak}d`} color="text-chart-amber" subtext={`Best: ${longestStreak}d`} />
-        <StatCard icon={Zap} label="Total XP" value={gamification?.total_xp || 0} color="text-chart-amber" subtext={`${prestigeLevel.icon} ${prestigeLevel.label}`} />
+        <StatCard icon={Target} label="Active Habits" value={activeHabitCount} color="text-chart-teal" />
+        <StatCard icon={Target} label="Habits Done" value={totalCompleted} color="text-chart-emerald" delta={completedDelta} deltaLabel="vs prev" />
         <StatCard icon={BookOpen} label="Skills Learned" value={periodSkills} color="text-chart-violet" />
         <StatCard icon={Shield} label="Consistency" value={overallConsistency} color="text-chart-teal" />
-        <StatCard icon={Target} label="Habits Done" value={totalCompleted} color="text-chart-emerald" delta={completedDelta} deltaLabel="vs prev" />
       </motion.div>
 
-      {/* Section B: Completion + XP Charts */}
-      <div className="grid lg:grid-cols-2 gap-4">
-        <Card className="glass-card-premium">
-          <CardHeader className="pb-1">
-            <CardTitle className="font-display text-sm flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary" />
-              Completion Rate
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={completionData}>
-                <defs>
-                  <linearGradient id="rateGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(180, 65%, 48%)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(180, 65%, 48%)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="date" tick={AXIS_TICK} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} domain={[0, 100]} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
-                <Area type="monotone" dataKey="rate" stroke="hsl(180, 65%, 48%)" fill="url(#rateGrad)" strokeWidth={2} name="Completion %" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        <XPTimeline data={xpTimeline || []} />
-      </div>
+      {/* Completion Rate Chart */}
+      <Card className="glass-card-premium">
+        <CardHeader className="pb-1">
+          <CardTitle className="font-display text-sm flex items-center gap-2">
+            <Activity className="h-4 w-4 text-primary" />
+            Completion Rate Over Time
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={completionData}>
+              <defs>
+                <linearGradient id="rateGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(180, 65%, 48%)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="hsl(180, 65%, 48%)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="date" tick={AXIS_TICK} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+              <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} domain={[0, 100]} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} />
+              <Area type="monotone" dataKey="rate" stroke="hsl(180, 65%, 48%)" fill="url(#rateGrad)" strokeWidth={2} name="Completion %" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
 
-      {/* Section C: Consistency Radar + Status Pie */}
+      {/* Full Habit Report Table */}
+      <Card className="glass-card-premium">
+        <CardHeader className="pb-1">
+          <CardTitle className="font-display text-sm flex items-center gap-2">
+            <TableIcon className="h-4 w-4 text-primary" />
+            Habit Performance Report
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {habitReport.length === 0 ? (
+            <p className="text-xs text-muted-foreground py-4">No habit data for this period.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Habit</TableHead>
+                  <TableHead className="text-xs">Identity</TableHead>
+                  <TableHead className="text-xs text-center">Full</TableHead>
+                  <TableHead className="text-xs text-center">Min</TableHead>
+                  <TableHead className="text-xs text-center">Miss</TableHead>
+                  <TableHead className="text-xs text-center">Total</TableHead>
+                  <TableHead className="text-xs text-right">Completion %</TableHead>
+                  <TableHead className="text-xs w-24">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {habitReport.map((h) => (
+                  <TableRow key={h.id} className={!h.active ? "opacity-50" : ""}>
+                    <TableCell className="text-xs font-medium">{h.name}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{h.identity}</TableCell>
+                    <TableCell className="text-xs text-center text-chart-emerald">{h.full}</TableCell>
+                    <TableCell className="text-xs text-center text-chart-amber">{h.min}</TableCell>
+                    <TableCell className="text-xs text-center text-destructive">{h.miss}</TableCell>
+                    <TableCell className="text-xs text-center">{h.total}</TableCell>
+                    <TableCell className="text-xs text-right font-mono font-medium">{h.completionPct}%</TableCell>
+                    <TableCell>
+                      <div className="h-2 rounded-full bg-secondary/40 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${
+                            h.completionPct >= 80 ? "bg-chart-emerald" : h.completionPct >= 50 ? "bg-chart-amber" : "bg-destructive"
+                          }`}
+                          style={{ width: `${h.completionPct}%` }}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Full Skill Report Table */}
+      <Card className="glass-card-premium">
+        <CardHeader className="pb-1">
+          <CardTitle className="font-display text-sm flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-chart-violet" />
+            Skill Report
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {!skills || skills.length === 0 ? (
+            <p className="text-xs text-muted-foreground py-4">No skills logged yet.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Skill Name</TableHead>
+                  <TableHead className="text-xs">Category</TableHead>
+                  <TableHead className="text-xs">Date Learned</TableHead>
+                  <TableHead className="text-xs">Notes</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {skills.map((s) => {
+                  const catMeta = SKILL_CATEGORIES.find(c => c.value === s.category);
+                  return (
+                    <TableRow key={s.id}>
+                      <TableCell className="text-xs font-medium">{s.name}</TableCell>
+                      <TableCell className="text-xs">
+                        <span className="flex items-center gap-1.5">
+                          <div className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: catMeta?.color || "hsl(var(--muted))" }} />
+                          {catMeta?.label || s.category}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{format(new Date(s.date_learned), "MMM d, yyyy")}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">{s.notes || "—"}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Charts Grid */}
       <div className="grid lg:grid-cols-2 gap-4">
-        <ConsistencyRadar scores={consistencyScores || null} />
+        {/* Status Split Pie */}
         <Card className="glass-card-premium">
           <CardHeader className="pb-1">
             <CardTitle className="font-display text-sm flex items-center gap-2">
@@ -244,15 +391,8 @@ export default function Analytics() {
             )}
           </CardContent>
         </Card>
-      </div>
 
-      {/* Section D: Behavioral Intelligence */}
-      <div className="grid lg:grid-cols-2 gap-4">
-        <EnergyCorrelation checkins={checkins || []} logs={logs} />
-        <FrictionAnalysis data={frictionData || []} />
-      </div>
-      <div className="grid lg:grid-cols-2 gap-4">
-        <BestWorstDays data={bestWorstDays} />
+        {/* Bucketed Breakdown */}
         <Card className="glass-card-premium">
           <CardHeader className="pb-1">
             <CardTitle className="font-display text-sm flex items-center gap-2">
@@ -275,17 +415,28 @@ export default function Analytics() {
         </Card>
       </div>
 
-      {/* Section E: Identity Performance */}
+      {/* Best/Worst Days + Consistency Radar */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <BestWorstDays data={bestWorstDays} />
+        <ConsistencyRadar scores={consistencyScores || null} />
+      </div>
+
+      {/* Behavioral Intelligence */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <EnergyCorrelation checkins={checkins || []} logs={logs} />
+        <FrictionAnalysis data={frictionData || []} />
+      </div>
+
+      {/* Identity Performance */}
       <IdentityPerformance alignments={identityAlignments || []} />
 
-      {/* Section F: Streak Heatmap */}
+      {/* Streak Heatmap */}
       <StreakHeatmap data={heatmapData} />
 
       {/* AI Insights */}
       <AIInsights
         avgCompletion={avgRate}
         streak={currentStreak}
-        totalXP={gamification?.total_xp || 0}
         bestDay={bestDay.day}
         worstDay={worstDay.day}
       />

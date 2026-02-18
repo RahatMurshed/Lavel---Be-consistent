@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useSkills, useCreateSkill, useDeleteSkill, SKILL_CATEGORIES } from "@/hooks/useSkills";
 import { useSkillMilestones, useCreateMilestone, useUpdateMilestone, useDeleteMilestone } from "@/hooks/useSkillMilestones";
 import { useSkillRecommendations, SkillStack } from "@/hooks/useSkillRecommendations";
-import { useAwardXP } from "@/hooks/useGamification";
 import { useIdentityAlignment } from "@/hooks/useIdentityAlignment";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, BookOpen, X, Target, Sparkles, CheckCircle2, Loader2, ChevronDown, ChevronUp, Trophy } from "lucide-react";
@@ -23,7 +22,6 @@ export default function Skills() {
   const createMilestone = useCreateMilestone();
   const updateMilestone = useUpdateMilestone();
   const deleteMilestone = useDeleteMilestone();
-  const awardXP = useAwardXP();
   const { data: identities } = useIdentityAlignment();
   const { stacks, isLoading: aiLoading, error: aiError, generate } = useSkillRecommendations();
 
@@ -41,8 +39,7 @@ export default function Skills() {
   const handleCreate = async () => {
     if (!name.trim()) return;
     await createSkill.mutateAsync({ name: name.trim(), category, notes: notes.trim() || undefined });
-    awardXP.mutate({ source: "skill_learned", xpAmount: 30 });
-    toast.success(`+30 XP — Skill logged!`);
+    toast.success("Skill logged!");
     setName(""); setNotes(""); setShowForm(false);
   };
 
@@ -62,15 +59,13 @@ export default function Skills() {
     const completed = next >= target;
     updateMilestone.mutate({ id, current_count: next, completed });
     if (completed) {
-      awardXP.mutate({ source: "milestone_completed", xpAmount: 50 });
-      toast.success("🏆 Milestone completed! +50 XP");
+      toast.success("🏆 Milestone completed!");
     }
   };
 
   const handleAddRecommendedSkill = async (skill: { name: string; category: string }) => {
     await createSkill.mutateAsync({ name: skill.name, category: skill.category });
-    awardXP.mutate({ source: "skill_learned", xpAmount: 30 });
-    toast.success(`+30 XP — "${skill.name}" added!`);
+    toast.success(`"${skill.name}" added!`);
   };
 
   const handleGenerateRecommendations = () => {
@@ -296,7 +291,7 @@ export default function Skills() {
             </Select>
             <Textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
             <Button onClick={handleCreate} disabled={!name.trim() || createSkill.isPending} className="btn-gradient w-full">
-              Log Skill (+30 XP)
+              Log Skill
             </Button>
           </CardContent>
         )}
