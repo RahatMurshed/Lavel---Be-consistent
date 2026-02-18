@@ -9,12 +9,13 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { NavLink } from "@/components/NavLink";
-import { LayoutGrid, Flame, TrendingUp, Compass, Sparkles } from "lucide-react";
+import { LayoutGrid, Flame, TrendingUp, Compass, Sparkles, Target } from "lucide-react";
 import { useIdentities } from "@/hooks/useHabits";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutGrid },
+  { title: "Identity", url: "/dashboard/identity", icon: Target },
   { title: "Habits", url: "/dashboard/habits", icon: Flame },
   { title: "Analytics", url: "/dashboard/analytics", icon: TrendingUp },
   { title: "Daily Plan", url: "/dashboard/plan", icon: Compass },
