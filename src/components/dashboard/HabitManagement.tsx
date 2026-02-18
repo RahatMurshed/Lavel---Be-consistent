@@ -37,7 +37,7 @@ const emptyForm: HabitForm = { name: "", full_version: "", min_version: "", cue_
 
 const cardFade = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.8 } },
 };
 
 export function HabitManagement() {
@@ -211,7 +211,7 @@ export function HabitManagement() {
           <motion.div
             initial="hidden"
             animate="show"
-            variants={{ show: { transition: { staggerChildren: 0.07 } } }}
+            variants={{ show: { transition: { staggerChildren: 0.2 } } }}
             className="space-y-3"
           >
             {activeHabits.map((habit) => {
@@ -302,7 +302,7 @@ export function HabitManagement() {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.7 }}
                 className="overflow-hidden space-y-2"
               >
                 {archivedHabits.map((habit) => (
