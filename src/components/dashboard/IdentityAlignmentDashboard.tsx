@@ -2,10 +2,23 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useIdentityAlignment } from "@/hooks/useIdentityAlignment";
+import { useDeleteIdentity } from "@/hooks/useHabits";
 import { motion, AnimatePresence } from "framer-motion";
-import { Vote, ChevronDown, ChevronUp, Check, Minus, X, Target } from "lucide-react";
+import { Vote, ChevronDown, ChevronUp, Check, Minus, X, Target, Trash2 } from "lucide-react";
 import { PremiumIcon } from "@/components/ui/PremiumIcon";
 import AddIdentityForm from "./AddIdentityForm";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 const IDENTITY_GRADIENTS: Record<string, string> = {
   violet: "from-[hsl(258,62%,63%)] to-[hsl(215,70%,62%)]",
@@ -33,6 +46,7 @@ const cardFade = {
 export function IdentityAlignmentDashboard() {
   const { data: alignments, isLoading, totalVotes } = useIdentityAlignment(7);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const deleteIdentity = useDeleteIdentity();
 
   if (isLoading) {
     return (
@@ -111,6 +125,38 @@ export function IdentityAlignmentDashboard() {
                         <span className={`font-display text-2xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>
                           {identity.alignmentPct}%
                         </span>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button
+                              className="p-1.5 rounded-lg bg-destructive/10 hover:bg-destructive/20 text-destructive transition-colors"
+                              title="Delete identity"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete {identity.label}?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Linked habits will be kept but unlinked from this identity. This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => {
+                                  deleteIdentity.mutate(identity.id, {
+                                    onSuccess: () => toast.success(`"${identity.label}" identity deleted`),
+                                    onError: () => toast.error("Failed to delete identity"),
+                                  });
+                                }}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                         <button
                           onClick={() => setExpanded(isExpanded ? null : identity.id)}
                           className="p-1.5 rounded-lg bg-secondary/30 hover:bg-secondary/50 text-muted-foreground transition-colors"

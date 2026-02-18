@@ -229,6 +229,41 @@ export function useCreateIdentity() {
   });
 }
 
+export function useDeleteIdentity() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (identityId: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // 1. Unlink habits
+      await supabase
+        .from("habits")
+        .update({ identity_id: null })
+        .eq("identity_id", identityId);
+
+      // 2. Delete drift alerts
+      await supabase
+        .from("identity_drift_alerts")
+        .delete()
+        .eq("identity_id", identityId);
+
+      // 3. Delete identity
+      const { error } = await supabase
+        .from("identities")
+        .delete()
+        .eq("id", identityId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["identities"] });
+      queryClient.invalidateQueries({ queryKey: ["all-habits"] });
+      queryClient.invalidateQueries({ queryKey: ["active-habits"] });
+      queryClient.invalidateQueries({ queryKey: ["identity-drift"] });
+    },
+  });
+}
+
 export function useWeekFriction() {
   return useQuery({
     queryKey: ["week-friction"],
