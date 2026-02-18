@@ -121,40 +121,42 @@ export function DashboardCenter() {
   return (
     <main className="flex-1 overflow-y-auto p-6 space-y-6">
       {/* Stats Row */}
-      <motion.div initial="hidden" animate="show" variants={cardStagger} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <motion.div variants={cardFade}>
-          <Card className="glass-card-premium glow-primary">
+      <motion.div initial="hidden" animate="show" variants={cardStagger} className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+        <motion.div variants={cardFade} className="sm:col-span-3">
+          <Card className="glass-card-premium glow-primary h-full">
             <CardContent className="p-4">
               <ConsistencyGauge />
             </CardContent>
           </Card>
         </motion.div>
 
-        <motion.div variants={cardFade}>
-          <Card className="glass-card-premium overflow-hidden hover-float">
-            <div className="h-0.5 bg-gradient-to-r from-chart-teal to-chart-emerald" />
-            <CardContent className="p-4 flex items-center gap-4">
-              <PremiumIcon icon={Flame} theme="teal" size="lg" animated />
-              <div>
-                <p className="text-2xl font-display font-bold text-foreground">{streak}</p>
-                <p className="text-xs text-muted-foreground">Day Streak</p>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+        <div className="sm:col-span-2 flex flex-col gap-4">
+          <motion.div variants={cardFade} className="flex-1">
+            <Card className="glass-card-premium overflow-hidden hover-float h-full">
+              <div className="h-0.5 bg-gradient-to-r from-chart-teal to-chart-emerald" />
+              <CardContent className="p-4 flex items-center gap-4 h-full">
+                <PremiumIcon icon={Flame} theme="teal" size="lg" animated />
+                <div>
+                  <p className="text-2xl font-display font-bold text-foreground">{streak}</p>
+                  <p className="text-xs text-muted-foreground">Day Streak</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        <motion.div variants={cardFade}>
-          <Card className="glass-card-premium overflow-hidden hover-float">
-            <div className="h-0.5 bg-gradient-to-r from-chart-amber to-chart-rose" />
-            <CardContent className="p-4 flex items-center gap-4">
-              <PremiumIcon icon={ShieldAlert} theme="amber" size="lg" />
-              <div>
-                <p className={`text-2xl font-display font-bold ${burnoutColor}`}>{burnoutRisk}</p>
-                <p className="text-xs text-muted-foreground">Burnout Risk</p>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+          <motion.div variants={cardFade} className="flex-1">
+            <Card className="glass-card-premium overflow-hidden hover-float h-full">
+              <div className="h-0.5 bg-gradient-to-r from-chart-amber to-chart-rose" />
+              <CardContent className="p-4 flex items-center gap-4 h-full">
+                <PremiumIcon icon={ShieldAlert} theme="amber" size="lg" />
+                <div>
+                  <p className={`text-2xl font-display font-bold ${burnoutColor}`}>{burnoutRisk}</p>
+                  <p className="text-xs text-muted-foreground">Burnout Risk</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
       </motion.div>
 
       {/* Momentum Curve */}

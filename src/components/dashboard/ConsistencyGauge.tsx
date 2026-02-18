@@ -43,7 +43,7 @@ export function ConsistencyGauge() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex items-center gap-6">
-        <div className="relative w-32 h-32 flex-shrink-0">
+        <div className="relative w-28 h-28 flex-shrink-0">
           <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
             <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(228, 14%, 18%)" strokeWidth="8" />
             <circle
