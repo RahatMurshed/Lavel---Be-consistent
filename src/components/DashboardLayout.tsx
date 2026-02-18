@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { XPBar } from "@/components/dashboard/XPBar";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandMark } from "@/components/ui/BrandMark";
@@ -56,9 +55,6 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="hidden sm:block">
-                <XPBar />
-              </div>
               <span className="text-sm text-muted-foreground hidden sm:block">
                 {user.user_metadata?.display_name || user.email}
               </span>

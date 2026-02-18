@@ -1,19 +1,17 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
 import { Brain, ChevronDown, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   avgCompletion: number;
   streak: number;
-  totalXP: number;
   bestDay: string;
   worstDay: string;
 }
 
-export default function AIInsights({ avgCompletion, streak, totalXP, bestDay, worstDay }: Props) {
+export default function AIInsights({ avgCompletion, streak, bestDay, worstDay }: Props) {
   const [open, setOpen] = useState(false);
   const [insight, setInsight] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -24,7 +22,7 @@ export default function AIInsights({ avgCompletion, streak, totalXP, bestDay, wo
     try {
       const { data, error } = await supabase.functions.invoke("consistency-coach", {
         body: {
-          prompt: `Provide a brief 3-4 sentence analytics summary. Avg completion: ${avgCompletion}%. Current streak: ${streak} days. Total XP: ${totalXP}. Best day: ${bestDay}. Worst day: ${worstDay}. Give actionable advice.`,
+          prompt: `Provide a brief 3-4 sentence analytics summary. Avg completion: ${avgCompletion}%. Current streak: ${streak} days. Best day: ${bestDay}. Worst day: ${worstDay}. Give actionable advice.`,
         },
       });
       if (error) throw error;

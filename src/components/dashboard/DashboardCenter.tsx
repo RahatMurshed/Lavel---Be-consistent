@@ -4,7 +4,6 @@ import { Flame, ShieldAlert, Check, Minus, X, Rocket, Leaf, Gauge } from "lucide
 import { motion } from "framer-motion";
 import { useActiveHabits, useTodayLogs, useLogHabit, useRecentLogs } from "@/hooks/useHabits";
 import { useConsistencyScore } from "@/hooks/useConsistencyScore";
-import { useAwardXP } from "@/hooks/useGamification";
 import { useTodayCheckin } from "@/hooks/useDailyCheckin";
 import { useActiveSeasonalMode, MODE_META } from "@/hooks/useSeasonalMode";
 import { ConsistencyGauge } from "./ConsistencyGauge";
@@ -69,7 +68,6 @@ export function DashboardCenter() {
   const { data: checkin } = useTodayCheckin();
   const { data: seasonalMode } = useActiveSeasonalMode();
   const logHabit = useLogHabit();
-  const awardXP = useAwardXP();
   const score = useConsistencyScore();
   const streak = useStreak();
   const burnoutRisk = useBurnoutRisk();
@@ -88,11 +86,9 @@ export function DashboardCenter() {
       setFrictionModal({ open: true, habitId, habitName });
       return;
     }
-    const xp = status === "full" ? 20 : 10;
     logHabit.mutate({ habitId, status }, {
       onSuccess: () => {
-        awardXP.mutate({ source: `habit_${status}`, xpAmount: xp });
-        toast.success(`${getRandomToast(status as "full" | "min")} +${xp} XP`);
+        toast.success(getRandomToast(status as "full" | "min"));
       },
     });
   };
@@ -112,7 +108,6 @@ export function DashboardCenter() {
   const isLowEnergy = energy !== undefined && energy !== null && energy <= 3;
   const isHighEnergy = energy !== undefined && energy !== null && energy >= 7;
 
-  // Mode-aware: Grace mode forces min emphasis, Sprint forces full emphasis
   const isGraceMode = currentMode === "grace";
   const isSprintMode = currentMode === "sprint";
   const showMinVersion = isGraceMode || (isLowEnergy && !isSprintMode);
@@ -220,7 +215,6 @@ export function DashboardCenter() {
                         </span>
                       )}
                     </div>
-                    {/* Mode-aware version display */}
                     {isGraceMode ? (
                       <div className="mt-0.5">
                         <p className="text-xs text-chart-amber font-medium">{habit.min_version}</p>

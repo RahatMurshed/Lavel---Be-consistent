@@ -14,7 +14,6 @@ import {
   useTeamChallengeSuggestions,
   AISuggestion,
 } from "@/hooks/useGroupChallenges";
-import { useAwardXP } from "@/hooks/useGamification";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, Plus, Copy, LogIn, X, Trophy, Swords, Sparkles,
@@ -37,7 +36,6 @@ export default function Groups() {
   const createChallenge = useCreateChallenge();
   const joinChallenge = useJoinChallenge();
   const updateProgress = useUpdateProgress();
-  const awardXP = useAwardXP();
   const { suggestions, isLoading: aiLoading, error: aiError, generate, setSuggestions } = useTeamChallengeSuggestions();
 
   const [showCreate, setShowCreate] = useState(false);
@@ -106,7 +104,6 @@ export default function Groups() {
       end_date: endDate.toISOString().split("T")[0],
       ai_generated: true,
     });
-    awardXP.mutate({ source: "challenge_created", xpAmount: 10 });
     toast.success(`"${suggestion.title}" challenge started!`);
     setSuggestions(prev => prev.filter(s => s.title !== suggestion.title));
   };
@@ -120,8 +117,7 @@ export default function Groups() {
   const handleIncrementProgress = async (challengeId: string) => {
     const result = await updateProgress.mutateAsync({ challengeId, increment: 1 });
     if (result.completed) {
-      awardXP.mutate({ source: "challenge_completed", xpAmount: 50 });
-      toast.success("🏆 Challenge completed! +50 XP");
+      toast.success("🏆 Challenge completed!");
     } else {
       toast.success("+1 progress logged");
     }
@@ -381,9 +377,12 @@ export default function Groups() {
 
                     {pastChallenges.length > 0 && (
                       <div className="pt-2 border-t border-border/20">
-                        <p className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1"><Trophy className="h-3 w-3" /> Past Challenges</p>
-                        {pastChallenges.slice(0, 3).map(ch => (
-                          <div key={ch.id} className="text-xs text-muted-foreground py-0.5 line-through">{ch.title}</div>
+                        <p className="text-xs text-muted-foreground mb-2">Past Challenges</p>
+                        {pastChallenges.slice(0, 3).map((ch) => (
+                          <div key={ch.id} className="flex items-center gap-2 py-1">
+                            <Trophy className="h-3.5 w-3.5 text-chart-amber" />
+                            <span className="text-xs text-muted-foreground">{ch.title}</span>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -398,8 +397,6 @@ export default function Groups() {
   );
 }
 
-// --- Challenge Leaderboard Sub-component ---
-
 function ChallengeLeaderboard({
   challengeId,
   targetValue,
@@ -413,57 +410,41 @@ function ChallengeLeaderboard({
   onJoin: () => void;
   onProgress: () => void;
 }) {
-  const isParticipant = leaderboard?.some(async () => {
-    // We'll check in render
-    return false;
-  });
+  if (!leaderboard) return <div className="px-3 pb-3 text-xs text-muted-foreground">Loading...</div>;
+
+  const isParticipant = leaderboard.some((p: any) => p.isMe);
 
   return (
     <div className="px-3 pb-3 space-y-2 border-t border-border/20 pt-2">
-      {!leaderboard || leaderboard.length === 0 ? (
-        <div className="text-center py-3">
-          <p className="text-xs text-muted-foreground mb-2">No participants yet!</p>
-          <Button size="sm" className="btn-gradient" onClick={onJoin}>
-            <Flame className="h-3 w-3 mr-1" /> Join Challenge
-          </Button>
-        </div>
+      {leaderboard.length === 0 ? (
+        <p className="text-xs text-muted-foreground">No participants yet.</p>
       ) : (
-        <>
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-xs font-medium text-foreground flex items-center gap-1">
-              <Trophy className="h-3 w-3 text-primary" /> Leaderboard
-            </p>
-            <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] text-primary" onClick={onProgress}>
-              <ArrowUp className="h-3 w-3 mr-0.5" /> Log +1
-            </Button>
+        leaderboard.map((p: any, i: number) => (
+          <div key={p.id} className={`flex items-center gap-2 py-1 ${p.isMe ? "bg-primary/5 rounded-lg px-2 -mx-2" : ""}`}>
+            <span className="text-xs font-mono text-muted-foreground w-4">{i + 1}.</span>
+            {i === 0 && <Medal className="h-3.5 w-3.5 text-chart-amber" />}
+            <span className={`text-xs flex-1 ${p.isMe ? "font-medium text-primary" : "text-foreground"}`}>
+              {p.display_name || "Anonymous"}{p.isMe ? " (you)" : ""}
+            </span>
+            <div className="flex items-center gap-2">
+              <Progress value={(p.current_value / targetValue) * 100} className="h-1.5 w-16" />
+              <span className="text-[10px] font-mono text-muted-foreground">{p.current_value}/{targetValue}</span>
+            </div>
           </div>
-          {leaderboard.map((entry, i) => {
-            const pct = Math.min((entry.current_value / targetValue) * 100, 100);
-            const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "";
-            return (
-              <div key={entry.id} className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    {medal && <span className="text-sm">{medal}</span>}
-                    <span className="text-xs text-foreground">
-                      {entry.profiles?.display_name || "Anonymous"}
-                    </span>
-                    {entry.completed && <Medal className="h-3 w-3 text-primary" />}
-                  </div>
-                  <span className="text-[10px] font-mono text-muted-foreground">
-                    {entry.current_value}/{targetValue}
-                  </span>
-                </div>
-                <Progress value={pct} className="h-1.5" />
-              </div>
-            );
-          })}
-
-          <Button size="sm" variant="outline" className="w-full mt-1 text-xs" onClick={onJoin}>
-            <Flame className="h-3 w-3 mr-1" /> Join Challenge
-          </Button>
-        </>
+        ))
       )}
+
+      <div className="flex gap-2 pt-1">
+        {!isParticipant ? (
+          <Button size="sm" onClick={onJoin} className="btn-gradient h-7 text-xs w-full">
+            Join Challenge
+          </Button>
+        ) : (
+          <Button size="sm" onClick={onProgress} variant="outline" className="h-7 text-xs w-full">
+            <ArrowUp className="h-3 w-3 mr-1" /> Log Progress
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

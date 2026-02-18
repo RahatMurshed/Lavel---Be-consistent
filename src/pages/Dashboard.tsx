@@ -5,7 +5,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { DashboardCenter } from "@/components/dashboard/DashboardCenter";
 import { DashboardRight } from "@/components/dashboard/DashboardRight";
-import { XPBar } from "@/components/dashboard/XPBar";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandMark } from "@/components/ui/BrandMark";
@@ -69,9 +68,6 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="hidden sm:block">
-                <XPBar />
-              </div>
               <span className="text-sm text-muted-foreground hidden sm:block">
                 {user.user_metadata?.display_name || user.email}
               </span>
