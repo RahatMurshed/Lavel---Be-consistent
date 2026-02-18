@@ -1,25 +1,34 @@
 
-# Clarify Consistency Metrics
+# Fix Dashboard Card Sizing
 
-## Overview
-Improve the Consistency Gauge on the dashboard to ensure the 5 metrics (Completion, Stability, Recovery, Resilience, and Energy) are clearly labeled and explained, resolving the confusion about what the side numbers represent.
+## Problem
+The three top stat cards (Consistency, Day Streak, Burnout Risk) are in a 3-column grid, but the Consistency card contains a large circular gauge + 5 metric bars, making it visually dominate. The Streak and Burnout cards only show a single number and look tiny by comparison.
 
-## Technical Details
+## Solution
+Restructure the stats row layout so the Consistency card gets its own appropriate space, and the Streak + Burnout cards are properly sized to match.
 
-### 1. Update Consistency Gauge UI (`src/components/dashboard/ConsistencyGauge.tsx`)
-- Increase the label width and remove `truncate` to ensure full names are visible.
-- Add a small `Info` icon with a `Tooltip` (using Radix UI Tooltip component) for each metric that explains what it means:
-    - **Completion**: Percentage of habits logged as Full or Minimum.
-    - **Stability**: Measures the consistency of your daily volume.
-    - **Recovery**: How fast you return to a habit after a missed day.
-    - **Resilience**: Your performance on days when energy is 4 or lower.
-    - **Energy Alignment**: Your performance on days when energy is 7 or higher.
-- Adjust the layout to ensure labels don't get squeezed on mobile or smaller cards.
+### Layout Change (`src/components/dashboard/DashboardCenter.tsx`)
+- Change the grid from `grid-cols-3` (equal thirds) to a **2-column layout**: Consistency card takes ~60% width, and Streak + Burnout stack vertically in the remaining ~40%
+- Use `grid-cols-1 sm:grid-cols-5` with the Consistency card spanning 3 columns (`col-span-3`) and a nested stack for Streak + Burnout spanning 2 columns (`col-span-2`)
+- The Streak and Burnout cards will stack vertically with `flex flex-col gap-4` and each card will use `flex-1` to fill equal vertical space, making them feel more substantial
 
-### 2. Rename Resilience to "Flexibility"
-- Since the user is seeing an "F" label in their current view (possibly from a previous version or specific build), I will standardize the label to "Flexibility" if it helps clarity, or ensure "Resilience" is fully spelled out. I'll stick to **Flexibility** as it often resonates better with the "Minimum Version" feature.
+### Consistency Gauge Adjustment (`src/components/dashboard/ConsistencyGauge.tsx`)
+- Reduce the gauge circle size from `w-32 h-32` to `w-28 h-28` to keep it proportionate within its card
+- Tighten padding so the card doesn't feel oversized
 
-### Files Modified
-- `src/components/dashboard/ConsistencyGauge.tsx`: UI layout and label updates.
-- `src/hooks/useConsistencyScore.ts`: (Optional) Update internal key names if needed for clarity, though it's mostly a UI change.
+### Visual Result
+```text
++-----------------------------+------------------+
+|                             |   Day Streak     |
+|   Consistency Gauge         |                  |
+|   [circle] + 5 bars         +------------------+
+|                             |   Burnout Risk   |
+|                             |                  |
++-----------------------------+------------------+
+```
 
+## Files Modified
+| File | Change |
+|------|--------|
+| `src/components/dashboard/DashboardCenter.tsx` | Restructure stats grid to 2-column layout with Streak/Burnout stacked vertically |
+| `src/components/dashboard/ConsistencyGauge.tsx` | Slightly reduce gauge circle size for better proportion |
