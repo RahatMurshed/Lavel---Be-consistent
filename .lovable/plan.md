@@ -1,54 +1,25 @@
 
-
-# Disable Email Verification + Comprehensive Feature Tour
+# Clarify Consistency Metrics
 
 ## Overview
+Improve the Consistency Gauge on the dashboard to ensure the 5 metrics (Completion, Stability, Recovery, Resilience, and Energy) are clearly labeled and explained, resolving the confusion about what the side numbers represent.
 
-Two changes:
+## Technical Details
 
-1. **Disable email verification** so new signups can log in immediately (for testing)
-2. **Expand the Feature Tour** to cover all app features including the newer ones (Skills, Groups, Leaderboard, Seasonal Modes, Todos)
+### 1. Update Consistency Gauge UI (`src/components/dashboard/ConsistencyGauge.tsx`)
+- Increase the label width and remove `truncate` to ensure full names are visible.
+- Add a small `Info` icon with a `Tooltip` (using Radix UI Tooltip component) for each metric that explains what it means:
+    - **Completion**: Percentage of habits logged as Full or Minimum.
+    - **Stability**: Measures the consistency of your daily volume.
+    - **Recovery**: How fast you return to a habit after a missed day.
+    - **Resilience**: Your performance on days when energy is 4 or lower.
+    - **Energy Alignment**: Your performance on days when energy is 7 or higher.
+- Adjust the layout to ensure labels don't get squeezed on mobile or smaller cards.
 
----
+### 2. Rename Resilience to "Flexibility"
+- Since the user is seeing an "F" label in their current view (possibly from a previous version or specific build), I will standardize the label to "Flexibility" if it helps clarity, or ensure "Resilience" is fully spelled out. I'll stick to **Flexibility** as it often resonates better with the "Minimum Version" feature.
 
-## 1. Disable Email Verification
-
-### Auth Configuration
-- Use the `configure-auth` tool to enable auto-confirm for email signups so users skip the email verification step
-
-### Frontend Change (`src/pages/Auth.tsx`)
-- After successful signup, navigate directly to `/dashboard` instead of showing the "Check your email" toast
-
----
-
-## 2. Expanded Feature Tour
-
-### Current Tour Steps (6 steps)
-The existing tour covers: Dashboard, Morning Check-in, Identity Alignment, Habits, Analytics, AI Mirror
-
-### Updated Tour Steps (10 steps)
-Add coverage for all features in the sidebar nav:
-
-| Step | Icon | Title | Description |
-|------|------|-------|-------------|
-| 1 | LayoutDashboard | Dashboard | Daily command center for logging habits and tracking momentum |
-| 2 | Sun | Morning Check-in | Rate your energy; the app adapts habit versions accordingly |
-| 3 | Fingerprint | Identity Alignment | Track how your actions align with who you're becoming |
-| 4 | ListChecks | Habits | Manage your Full and Minimum habit versions |
-| 5 | BookOpen | Skills | Track skills you're learning and get AI recommendations |
-| 6 | BarChart3 | Analytics | Professional performance reports with trends and breakdowns |
-| 7 | Trophy | Leaderboard | Compete with others globally or within your groups |
-| 8 | Users | Groups | Join or create accountability groups with shared challenges |
-| 9 | Brain | AI Mirror | AI-powered reflections, coaching, and corrective plans |
-| 10 | Leaf | Seasonal Modes | Switch between Push, Maintain, and Recovery modes based on your life season |
-
-### File Changes
-
-| File | Change |
-|------|--------|
-| `src/pages/Auth.tsx` | On signup success, navigate to `/dashboard` instead of showing email confirmation toast |
-| `src/components/dashboard/FeatureTour.tsx` | Add 4 new tour steps for Skills, Leaderboard, Groups, and Seasonal Modes |
-
-### Auth Config
-- Auto-confirm email signups enabled via configure-auth tool
+### Files Modified
+- `src/components/dashboard/ConsistencyGauge.tsx`: UI layout and label updates.
+- `src/hooks/useConsistencyScore.ts`: (Optional) Update internal key names if needed for clarity, though it's mostly a UI change.
 
