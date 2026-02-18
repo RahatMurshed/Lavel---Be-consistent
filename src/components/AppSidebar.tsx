@@ -12,6 +12,7 @@ import { NavLink } from "@/components/NavLink";
 import { LayoutGrid, Flame, TrendingUp, Compass, Sparkles, Target } from "lucide-react";
 import { useIdentities } from "@/hooks/useHabits";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SeasonalModeSwitcher } from "@/components/dashboard/SeasonalModeSwitcher";
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutGrid },
@@ -75,6 +76,18 @@ export function AppSidebar() {
                   );
                 })
               )}
+            </div>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Seasonal Mode */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
+            Season
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <div className="px-3 py-2">
+              <SeasonalModeSwitcher />
             </div>
           </SidebarGroupContent>
         </SidebarGroup>

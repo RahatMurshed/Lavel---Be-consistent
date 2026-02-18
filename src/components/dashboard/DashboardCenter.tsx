@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Flame, ShieldAlert, Check, Minus, X } from "lucide-react";
+import { Flame, ShieldAlert, Check, Minus, X, Rocket, Leaf, Gauge } from "lucide-react";
 import { motion } from "framer-motion";
 import { useActiveHabits, useTodayLogs, useLogHabit, useRecentLogs } from "@/hooks/useHabits";
 import { useConsistencyScore } from "@/hooks/useConsistencyScore";
 import { useTodayCheckin } from "@/hooks/useDailyCheckin";
+import { useActiveSeasonalMode, MODE_META } from "@/hooks/useSeasonalMode";
 import { ConsistencyGauge } from "./ConsistencyGauge";
 import { MomentumChart } from "./MomentumChart";
 import { FrictionModal } from "./FrictionModal";
@@ -65,10 +66,14 @@ export function DashboardCenter() {
   const { data: habits, isLoading: habitsLoading } = useActiveHabits();
   const { data: todayLogs } = useTodayLogs();
   const { data: checkin } = useTodayCheckin();
+  const { data: seasonalMode } = useActiveSeasonalMode();
   const logHabit = useLogHabit();
   const score = useConsistencyScore();
   const streak = useStreak();
   const burnoutRisk = useBurnoutRisk();
+
+  const currentMode = seasonalMode?.mode || null;
+  const modeMeta = currentMode ? MODE_META[currentMode as keyof typeof MODE_META] : null;
 
   const [frictionModal, setFrictionModal] = useState<{ open: boolean; habitId: string; habitName: string }>({
     open: false, habitId: "", habitName: "",
@@ -101,7 +106,15 @@ export function DashboardCenter() {
   const isLowEnergy = energy !== undefined && energy !== null && energy <= 3;
   const isHighEnergy = energy !== undefined && energy !== null && energy >= 7;
 
+  // Mode-aware: Grace mode forces min emphasis, Sprint forces full emphasis
+  const isGraceMode = currentMode === "grace";
+  const isSprintMode = currentMode === "sprint";
+  const showMinVersion = isGraceMode || (isLowEnergy && !isSprintMode);
+  const showFullEmphasis = isSprintMode || (isHighEnergy && !isGraceMode);
+
   const burnoutColor = burnoutRisk === "High" ? "text-destructive" : burnoutRisk === "Medium" ? "text-chart-amber" : "text-success";
+
+  const MODE_ICONS_MAP: Record<string, typeof Rocket> = { sprint: Rocket, grace: Leaf, maintenance: Gauge };
 
   return (
     <main className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -161,8 +174,14 @@ export function DashboardCenter() {
           <CardTitle className="font-display text-lg flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-glow" />
             Today's Habits
-            {isLowEnergy && <span className="text-xs font-normal text-chart-amber bg-chart-amber/10 px-2 py-0.5 rounded-full ml-2">Low Energy Mode</span>}
-            {isHighEnergy && <span className="text-xs font-normal text-success bg-success/10 px-2 py-0.5 rounded-full ml-2">Full Power</span>}
+            {modeMeta && (
+              <span className={`text-xs font-normal ${modeMeta.color} ${modeMeta.bgClass} px-2 py-0.5 rounded-full ml-2 flex items-center gap-1`}>
+                {(() => { const MIcon = MODE_ICONS_MAP[currentMode!]; return MIcon ? <MIcon className="h-3 w-3" /> : null; })()}
+                {modeMeta.label}
+              </span>
+            )}
+            {!modeMeta && isLowEnergy && <span className="text-xs font-normal text-chart-amber bg-chart-amber/10 px-2 py-0.5 rounded-full ml-2">Low Energy Mode</span>}
+            {!modeMeta && isHighEnergy && <span className="text-xs font-normal text-success bg-success/10 px-2 py-0.5 rounded-full ml-2">Full Power</span>}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -195,9 +214,21 @@ export function DashboardCenter() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {isLowEnergy ? habit.min_version : habit.full_version}
-                    </p>
+                    {/* Mode-aware version display */}
+                    {isGraceMode ? (
+                      <div className="mt-0.5">
+                        <p className="text-xs text-chart-amber font-medium">{habit.min_version}</p>
+                        <p className="text-[10px] text-muted-foreground/50 line-through">{habit.full_version}</p>
+                      </div>
+                    ) : isSprintMode ? (
+                      <div className="mt-0.5">
+                        <p className="text-xs text-success font-medium">{habit.full_version}</p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {showMinVersion ? habit.min_version : habit.full_version}
+                      </p>
+                    )}
                     {identity && (
                       <p className="text-[10px] text-muted-foreground">{identity.label}</p>
                     )}
@@ -208,7 +239,11 @@ export function DashboardCenter() {
                         whileTap={{ scale: 0.92 }}
                         onClick={() => handleLog(habit.id, habit.name, "full")}
                         className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                          isLowEnergy
+                          isGraceMode
+                            ? "bg-secondary/30 text-muted-foreground hover:bg-success/20 hover:text-success"
+                            : isSprintMode
+                            ? "bg-success/20 text-success hover:bg-success/30 ring-1 ring-success/20"
+                            : showMinVersion
                             ? "bg-secondary/30 text-muted-foreground hover:bg-success/20 hover:text-success"
                             : "bg-success/15 text-success hover:bg-success/25"
                         }`}
@@ -219,7 +254,9 @@ export function DashboardCenter() {
                         whileTap={{ scale: 0.92 }}
                         onClick={() => handleLog(habit.id, habit.name, "min")}
                         className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                          isLowEnergy
+                          isGraceMode
+                            ? "bg-chart-amber/20 text-chart-amber hover:bg-chart-amber/30 ring-1 ring-chart-amber/20"
+                            : showMinVersion
                             ? "bg-chart-amber/15 text-chart-amber hover:bg-chart-amber/25 ring-1 ring-chart-amber/20"
                             : "bg-chart-amber/15 text-chart-amber hover:bg-chart-amber/25"
                         }`}
