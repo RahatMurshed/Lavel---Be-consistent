@@ -1,120 +1,118 @@
 
-# Advanced Data-Driven Analytics Explorer
+# Remove Gamification, Build Professional Data Report
 
-## Problem
+## Overview
 
-The current Analytics page shows basic completion-rate charts and simple skill counts. The PRD demands **serious analytics for nerds and achievers** -- deep data intelligence with behavioral insights, energy/mood correlations, identity performance tracking, XP trajectory modeling, streak analysis, and exportable growth reports across all time scales.
+Strip all XP, prestige levels, badges, and leaderboard gamification from the app. Replace the Analytics page with a clean, professional **Performance Report** that comprehensively shows all habits and skills with completion data, percentages, and charts.
 
-## What's Missing (per PRD Section 5)
+## What Gets Removed
 
-1. **All-Time period** -- only Weekly/Monthly/Half-Year/Yearly exist
-2. **Streak analytics** -- no current/longest streak visualization or streak heatmap
-3. **Energy and mood trend correlation** -- daily_checkins data (energy, mood, stress) is never surfaced in analytics
-4. **Identity alignment performance** -- per-identity completion tracking over time is missing
-5. **XP accumulation curve** -- xp_events table is queried but never charted over time
-6. **Consistency Score radar** -- the 5D consistency score (completion ratio, trend stability, recovery speed, resilience, energy alignment) is computed but never visualized here
-7. **Behavioral insights panel** -- no AI-generated text insights summarizing the data
-8. **Friction analysis** -- friction_trigger data from behavior_logs is not surfaced
-9. **Prestige rank progression** -- no visualization of rank trajectory
-10. **Exportable/shareable reports** -- no export functionality
+### Files to Delete
+- `src/components/dashboard/XPBar.tsx` -- XP progress bar in header
+- `src/components/dashboard/PrestigeBadge.tsx` -- Prestige tier badge
+- `src/components/dashboard/LevelUpOverlay.tsx` -- Level-up animation
+- `src/components/analytics/XPTimeline.tsx` -- XP accumulation chart
+- `src/pages/Leaderboard.tsx` -- Entire leaderboard page
+
+### Files to Modify (Remove Gamification References)
+
+| File | What Changes |
+|------|-------------|
+| `src/components/DashboardLayout.tsx` | Remove `XPBar` import and usage from header |
+| `src/pages/Dashboard.tsx` | Remove `XPBar` import and usage from header |
+| `src/components/dashboard/DashboardCenter.tsx` | Remove `useAwardXP` import and all `awardXP.mutate()` calls; remove XP toast messages |
+| `src/pages/Skills.tsx` | Remove `useAwardXP` import and all `awardXP.mutate()` calls; remove "+XP" labels from buttons |
+| `src/pages/Groups.tsx` | Remove `useAwardXP` import and all `awardXP.mutate()` calls; remove XP toast messages |
+| `src/components/AppSidebar.tsx` | Remove "Leaderboard" nav item |
+| `src/App.tsx` | Remove Leaderboard route and import |
+
+### Hook Stays (For Now)
+`src/hooks/useGamification.ts` will remain in the codebase but won't be imported anywhere active. The `user_gamification`, `xp_events`, and `badges` tables stay in the database (no data destruction) but are no longer used.
 
 ---
 
-## Implementation Plan
+## New Analytics Page: Professional Performance Report
 
-### 1. Add "All-Time" Period Option
+A clean, data-dense report replacing the current gamified analytics. Organized into clear sections:
 
-Add a fifth period to the PERIODS array: `{ key: "all", label: "All-Time", days: 9999, bucketLabel: "Month" }`. The `useRecentLogs` hook already accepts a `days` parameter, so this works automatically.
+### Section 1: Period Selector + Export
+- Same period tabs: Weekly, Monthly, Half-Year, Yearly, All-Time
+- Print/Export button using `window.print()`
 
-### 2. New Hook: `useAnalyticsData`
+### Section 2: Summary Stats (6 cards, no XP)
+- **Avg Completion %** (with delta vs previous period)
+- **Current Streak** (days, with longest streak)
+- **Total Habits Tracked** (active count)
+- **Habits Completed** (this period, with delta)
+- **Skills Learned** (this period)
+- **Consistency Score** (from consistency_scores table)
 
-Create `src/hooks/useAnalyticsData.ts` that consolidates all data sources for the analytics page:
+### Section 3: Completion Rate Over Time
+- Area chart showing daily/weekly/monthly completion rate %
 
-- **XP timeline**: Query `xp_events` table grouped by date, compute cumulative XP curve
-- **Energy/mood trends**: Query `daily_checkins` for energy and stress over the selected period
-- **Friction analysis**: Query `behavior_logs` where `friction_trigger IS NOT NULL` and aggregate top friction tags
-- **Streak calculation**: Compute current and longest streaks from behavior_logs date sequences
-- **Identity performance**: Use `useIdentityAlignment` with dynamic day ranges per period
+### Section 4: Full Habit Report Table
+A detailed table listing **every habit** with columns:
+- Habit Name
+- Identity (parent identity label)
+- Full completions count
+- Min completions count
+- Misses count
+- Total logs
+- Completion % (full+min / total)
+- Status indicator (color-coded bar)
 
-### 3. Rebuild Analytics Page with 6 Sections
+This is the core "report" the user is asking for -- every habit with full data.
 
-Restructure `src/pages/Analytics.tsx` into a tabbed/scrollable layout with these sections:
+### Section 5: Full Skill Report Table
+A table listing **every skill** with columns:
+- Skill Name
+- Category (with color dot)
+- Date Learned
+- Notes
 
-**Section A -- Summary Stats Row (enhanced)**
-- Avg Completion % (with delta)
-- Current Streak (with longest streak indicator)
-- Total XP (with prestige rank badge inline)
-- Skills Learned (this period)
-- Consistency Score (overall number)
-- Habits Completed (with delta)
+### Section 6: Charts Grid (2x2)
+- **Status Split** -- Pie chart (Full / Min / Miss breakdown)
+- **Bucketed Breakdown** -- Stacked bar chart per time bucket
+- **Best / Worst Days** -- Day-of-week performance bars
+- **Consistency Radar** -- 5D radar chart (completion, stability, recovery, resilience, energy)
 
-**Section B -- Completion and XP Charts (existing, enhanced)**
-- Completion rate area chart (keep existing)
-- XP accumulation curve (new line chart from xp_events, showing cumulative XP over time with prestige level threshold lines)
+### Section 7: Behavioral Intelligence
+- **Energy vs Completion Correlation** -- Dual-axis line chart
+- **Top Friction Triggers** -- Horizontal bar chart
 
-**Section C -- Consistency Radar**
-- Radar chart (recharts RadarChart) showing the 5 dimensions from `useConsistencyScore`: Completion Ratio, Trend Stability, Recovery Speed, Resilience Index, Energy Alignment
-- Each axis 0-100, with a filled polygon showing the user's profile
+### Section 8: Identity Performance
+- Per-identity alignment bar chart
 
-**Section D -- Behavioral Intelligence**
-- **Energy-Completion Correlation**: Scatter-style chart or dual-axis line chart overlaying daily energy level with completion rate to show correlation
-- **Mood Trend**: Line chart of daily mood/energy from `daily_checkins`
-- **Friction Heatmap**: Horizontal bar chart of top friction triggers (from `useWeekFriction`, extended to match period)
-- **Best/Worst Days**: Identify which days of the week have highest/lowest completion rates
+### Section 9: Streak Heatmap
+- GitHub-style grid, kept from current implementation
 
-**Section E -- Identity Performance**
-- Grouped bar chart or radar showing each identity's alignment % over the selected period
-- Per-identity trend lines showing drift direction
-
-**Section F -- Habit Streaks Heatmap**
-- GitHub-style contribution grid: a calendar heatmap where each cell represents a day, colored by completion % (green gradient for high, red for low, gray for no data)
-- Shows last 90-365 days depending on period selection
-
-### 4. Exportable Report Card
-
-Add an "Export Report" button that renders a summary as a styled, self-contained component and uses `html2canvas` or browser print API to generate a shareable image/PDF. Since adding a new dependency may not be ideal, we'll use the browser's native `window.print()` with a print-optimized CSS class as a first pass.
-
-### 5. AI Growth Insights
-
-Add a collapsible "AI Insights" card that calls the existing `consistency-coach` edge function (or a new lightweight variant) to generate a 3-4 sentence narrative summary of the analytics data -- e.g., "Your completion rate is up 12% this month. Tuesdays are your strongest day. Your 'Fitness' identity is drifting -- consider re-engaging morning workouts."
+### Section 10: AI Insights
+- Collapsible card, no XP references in prompt
 
 ---
 
 ## Technical Details
 
-### New Files
-| File | Purpose |
-|------|---------|
-| `src/hooks/useAnalyticsData.ts` | Consolidated hook for XP timeline, energy trends, friction data, streak stats |
-| `src/components/analytics/ConsistencyRadar.tsx` | 5D radar chart component |
-| `src/components/analytics/XPTimeline.tsx` | XP accumulation curve with prestige thresholds |
-| `src/components/analytics/EnergyCorrelation.tsx` | Dual-axis energy vs completion chart |
-| `src/components/analytics/FrictionAnalysis.tsx` | Horizontal bar chart of friction triggers |
-| `src/components/analytics/StreakHeatmap.tsx` | GitHub-style calendar heatmap |
-| `src/components/analytics/IdentityPerformance.tsx` | Per-identity alignment chart |
-| `src/components/analytics/AIInsights.tsx` | AI-generated narrative insights card |
-| `src/components/analytics/BestWorstDays.tsx` | Day-of-week performance breakdown |
+### Modified Analytics Components
+- `src/components/analytics/AIInsights.tsx` -- Remove `totalXP` prop and XP reference in prompt
+- `src/components/analytics/XPTimeline.tsx` -- Deleted (no longer needed)
 
-### Modified Files
-| File | Change |
-|------|--------|
-| `src/pages/Analytics.tsx` | Complete rebuild to compose all new sections |
-| `src/hooks/useHabits.ts` | Extend `useWeekFriction` to accept configurable days parameter |
+### New in Analytics Page
+- **Habit Report Table**: Query `useActiveHabits()` + `useRecentLogs(days)` to compute per-habit stats, render as a styled table with sortable data
+- **Skill Report Table**: Query `useSkills()` to render all skills with category and date
 
-### Data Sources Used
-- `behavior_logs` -- completion rates, streaks, friction triggers
-- `daily_checkins` -- energy, mood, stress levels
-- `xp_events` -- XP timeline and accumulation
-- `user_gamification` -- current XP, prestige level, streaks
-- `consistency_scores` -- 5D consistency metrics
-- `identities` + `habits` -- identity alignment performance
-- `skills` -- skill growth curve
+### Analytics Page Data Sources (unchanged)
+- `behavior_logs` via `useRecentLogs`
+- `daily_checkins` via `useEnergyMoodTrends`
+- `consistency_scores` via `useLatestConsistencyScores`
+- `identities` + `habits` via `useIdentityAlignment`
+- `skills` via `useSkills`
 
-### No Database Migrations Needed
-All data already exists in the tables. This is purely a frontend analytics visualization upgrade.
+### No Database Migrations
+No tables are created or dropped. Gamification tables remain but are unused.
 
-### Dependencies
-- `recharts` RadarChart (already installed) for the consistency radar
-- All other chart types (Area, Bar, Line, Pie, Scatter) already available in recharts
-- `framer-motion` (already installed) for section animations
-- No new packages required
+### Files Changed Summary
+| Action | Files |
+|--------|-------|
+| Delete | `XPBar.tsx`, `PrestigeBadge.tsx`, `LevelUpOverlay.tsx`, `XPTimeline.tsx`, `Leaderboard.tsx` |
+| Modify | `Analytics.tsx` (major rewrite), `DashboardLayout.tsx`, `Dashboard.tsx`, `DashboardCenter.tsx`, `Skills.tsx`, `Groups.tsx`, `AppSidebar.tsx`, `App.tsx`, `AIInsights.tsx` |
