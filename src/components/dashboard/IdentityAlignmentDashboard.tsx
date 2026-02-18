@@ -115,9 +115,17 @@ export function IdentityAlignmentDashboard() {
                               className="drop-shadow-[0_0_6px_hsl(var(--primary)/0.4)]"
                             />
                           </svg>
-                          <span className="absolute inset-0 flex items-center justify-center font-display text-sm font-bold text-primary">
-                            {pct}%
-                          </span>
+                          {identity.logo_url ? (
+                            <img
+                              src={identity.logo_url}
+                              alt={identity.label}
+                              className="absolute inset-[6px] rounded-full object-cover"
+                            />
+                          ) : (
+                            <span className="absolute inset-0 flex items-center justify-center font-display text-sm font-bold text-primary">
+                              {pct}%
+                            </span>
+                          )}
                         </div>
 
                         <div>

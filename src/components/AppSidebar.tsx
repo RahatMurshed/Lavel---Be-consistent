@@ -25,14 +25,6 @@ const navItems = [
   { title: "Groups", url: "/dashboard/groups", icon: Users },
 ];
 
-const IDENTITY_COLORS: Record<string, string> = {
-  violet: "from-[hsl(258,62%,63%)] to-[hsl(215,70%,62%)]",
-  teal: "from-[hsl(172,50%,55%)] to-[hsl(152,55%,52%)]",
-  amber: "from-[hsl(38,85%,65%)] to-[hsl(350,65%,65%)]",
-  rose: "from-[hsl(350,65%,65%)] to-[hsl(258,62%,63%)]",
-  blue: "from-[hsl(215,70%,62%)] to-[hsl(172,50%,55%)]",
-  emerald: "from-[hsl(152,55%,52%)] to-[hsl(172,50%,55%)]",
-};
 
 export function AppSidebar() {
   const { data: identities, isLoading } = useIdentities();
@@ -56,20 +48,27 @@ export function AppSidebar() {
                 <p className="text-xs text-muted-foreground px-1">No identities yet</p>
               ) : (
                 identities.map((identity) => {
-                  const gradientClass = IDENTITY_COLORS[identity.color || "violet"] || IDENTITY_COLORS.violet;
                   const habitCount = identity.habits?.length || 0;
                   return (
                     <div key={identity.id} className="glass-card-premium hover-float p-3 space-y-2">
                       <div className="flex items-center gap-2">
-                        <div className={`h-6 w-6 rounded-md bg-gradient-to-br ${gradientClass} flex items-center justify-center text-white text-[10px] font-bold`}>
-                          {identity.emoji || identity.label.charAt(0)}
-                        </div>
+                        {identity.logo_url ? (
+                          <img
+                            src={identity.logo_url}
+                            alt={identity.label}
+                            className="h-7 w-7 rounded-md object-cover ring-1 ring-border/30"
+                          />
+                        ) : (
+                          <div className="h-7 w-7 rounded-md bg-primary/20 flex items-center justify-center text-primary text-[10px] font-bold">
+                            {identity.label.charAt(0)}
+                          </div>
+                        )}
                         <span className="text-sm font-medium text-foreground">{identity.label}</span>
                         <span className="text-[10px] text-muted-foreground ml-auto">{habitCount}</span>
                       </div>
                       <div className="h-1 rounded-full bg-secondary/60 overflow-hidden">
                         <div
-                          className={`h-full rounded-full bg-gradient-to-r ${gradientClass} transition-all duration-700`}
+                          className="h-full rounded-full bg-primary transition-all duration-700"
                           style={{ width: `${identity.alignment_pct || 0}%` }}
                         />
                       </div>

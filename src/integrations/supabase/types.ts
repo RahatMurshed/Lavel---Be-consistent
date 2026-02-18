@@ -392,6 +392,7 @@ export type Database = {
           emoji: string | null
           id: string
           label: string
+          logo_url: string | null
           updated_at: string
           user_id: string
         }
@@ -402,6 +403,7 @@ export type Database = {
           emoji?: string | null
           id?: string
           label: string
+          logo_url?: string | null
           updated_at?: string
           user_id: string
         }
@@ -412,6 +414,7 @@ export type Database = {
           emoji?: string | null
           id?: string
           label?: string
+          logo_url?: string | null
           updated_at?: string
           user_id?: string
         }

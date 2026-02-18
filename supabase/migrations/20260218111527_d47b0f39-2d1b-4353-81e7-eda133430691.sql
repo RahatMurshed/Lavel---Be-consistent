@@ -1,0 +1,1 @@
+ALTER TABLE public.identities ADD COLUMN logo_url text;
