@@ -2,3 +2,9 @@ project_id = "qwkpsmfjrhjwjrdrykwt"
 
 [functions.motivational-quote]
 verify_jwt = false
+
+[functions.habit-generator]
+verify_jwt = false
+
+[functions.consistency-coach]
+verify_jwt = false
