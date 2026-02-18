@@ -417,6 +417,53 @@ export type Database = {
         }
         Relationships: []
       }
+      identity_drift_alerts: {
+        Row: {
+          alert_type: string
+          alignment_pct: number
+          corrective_plan: Json | null
+          created_at: string
+          dismissed: boolean | null
+          id: string
+          identity_id: string
+          previous_pct: number
+          severity: string
+          user_id: string
+        }
+        Insert: {
+          alert_type?: string
+          alignment_pct?: number
+          corrective_plan?: Json | null
+          created_at?: string
+          dismissed?: boolean | null
+          id?: string
+          identity_id: string
+          previous_pct?: number
+          severity?: string
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          alignment_pct?: number
+          corrective_plan?: Json | null
+          created_at?: string
+          dismissed?: boolean | null
+          id?: string
+          identity_id?: string
+          previous_pct?: number
+          severity?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "identity_drift_alerts_identity_id_fkey"
+            columns: ["identity_id"]
+            isOneToOne: false
+            referencedRelation: "identities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

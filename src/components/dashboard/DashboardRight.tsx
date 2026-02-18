@@ -6,6 +6,7 @@ import { useActiveHabits } from "@/hooks/useHabits";
 import { PremiumIcon } from "@/components/ui/PremiumIcon";
 import { toast } from "sonner";
 import { DailyMotivation } from "./DailyMotivation";
+import { IdentityDriftMonitor } from "./IdentityDriftMonitor";
 
 export function DashboardRight() {
   const { data: checkin, isLoading } = useTodayCheckin();
@@ -32,6 +33,9 @@ export function DashboardRight() {
 
   return (
     <aside className="hidden lg:block w-80 border-l border-border/50 overflow-y-auto p-4 space-y-4">
+      {/* Identity Drift Monitor */}
+      <IdentityDriftMonitor />
+
       {/* Daily Motivation */}
       <DailyMotivation />
 
