@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { DashboardCenter } from "@/components/dashboard/DashboardCenter";
 import { DashboardRight } from "@/components/dashboard/DashboardRight";
+import { FeatureTour } from "@/components/dashboard/FeatureTour";
+import { HelpDrawer } from "@/components/dashboard/HelpDrawer";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandMark } from "@/components/ui/BrandMark";
@@ -13,6 +15,7 @@ import type { User } from "@supabase/supabase-js";
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showTour, setShowTour] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,13 +36,16 @@ const Dashboard = () => {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("onboarding_completed")
+        .select("onboarding_completed, tour_completed")
         .eq("user_id", session.user.id)
         .single();
 
       if (!profile?.onboarding_completed) {
         navigate("/onboarding");
         return;
+      }
+      if (!(profile as any).tour_completed) {
+        setShowTour(true);
       }
       setLoading(false);
     });
@@ -68,6 +74,7 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <HelpDrawer />
               <span className="text-sm text-muted-foreground hidden sm:block">
                 {user.user_metadata?.display_name || user.email}
               </span>
@@ -76,6 +83,9 @@ const Dashboard = () => {
               </Button>
             </div>
           </header>
+          {showTour && user && (
+            <FeatureTour userId={user.id} onComplete={() => setShowTour(false)} />
+          )}
           <div className="flex-1 flex overflow-hidden">
             <DashboardCenter />
             <DashboardRight />

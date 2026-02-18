@@ -473,6 +473,7 @@ export type Database = {
           leaderboard_opt_in: boolean | null
           onboarding_completed: boolean | null
           timezone: string | null
+          tour_completed: boolean | null
           updated_at: string
           user_id: string
         }
@@ -484,6 +485,7 @@ export type Database = {
           leaderboard_opt_in?: boolean | null
           onboarding_completed?: boolean | null
           timezone?: string | null
+          tour_completed?: boolean | null
           updated_at?: string
           user_id: string
         }
@@ -495,6 +497,7 @@ export type Database = {
           leaderboard_opt_in?: boolean | null
           onboarding_completed?: boolean | null
           timezone?: string | null
+          tour_completed?: boolean | null
           updated_at?: string
           user_id?: string
         }
