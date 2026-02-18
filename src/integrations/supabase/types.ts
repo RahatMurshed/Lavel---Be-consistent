@@ -630,26 +630,32 @@ export type Database = {
       }
       todos: {
         Row: {
+          category: string | null
           completed: boolean
           completed_at: string | null
           created_at: string
           id: string
+          priority: string
           title: string
           user_id: string
         }
         Insert: {
+          category?: string | null
           completed?: boolean
           completed_at?: string | null
           created_at?: string
           id?: string
+          priority?: string
           title: string
           user_id: string
         }
         Update: {
+          category?: string | null
           completed?: boolean
           completed_at?: string | null
           created_at?: string
           id?: string
+          priority?: string
           title?: string
           user_id?: string
         }
