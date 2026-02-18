@@ -82,6 +82,44 @@ export type Database = {
           },
         ]
       }
+      challenge_progress: {
+        Row: {
+          challenge_id: string
+          completed: boolean | null
+          completed_at: string | null
+          current_value: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed?: boolean | null
+          completed_at?: string | null
+          current_value?: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed?: boolean | null
+          completed_at?: string | null
+          current_value?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "group_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consistency_scores: {
         Row: {
           completion_ratio: number
@@ -150,6 +188,59 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      group_challenges: {
+        Row: {
+          active: boolean | null
+          ai_generated: boolean | null
+          challenge_type: string
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string
+          group_id: string
+          id: string
+          start_date: string
+          target_value: number
+          title: string
+        }
+        Insert: {
+          active?: boolean | null
+          ai_generated?: boolean | null
+          challenge_type?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date?: string
+          group_id: string
+          id?: string
+          start_date?: string
+          target_value?: number
+          title: string
+        }
+        Update: {
+          active?: boolean | null
+          ai_generated?: boolean | null
+          challenge_type?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string
+          group_id?: string
+          id?: string
+          start_date?: string
+          target_value?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_challenges_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       group_members: {
         Row: {

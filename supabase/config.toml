@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.skill-recommender]
 verify_jwt = false
+
+[functions.team-challenge-generator]
+verify_jwt = false
