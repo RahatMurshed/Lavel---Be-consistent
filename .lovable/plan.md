@@ -1,20 +1,48 @@
 
-I will remove the motion effects specifically associated with the authentication card in `src/pages/Auth.tsx`.
+# Future Roadmap -- The "Identity & Evolution" Expansion
 
-### Analysis:
-1.  **Entry Animation**: The entire card container is currently wrapped in a `motion.div` that slides up and fades in on page load.
-2.  **Shimmer Border**: The card uses the `shimmer-border` class, which adds an animated gradient border.
-3.  **Background Motion**: There are background glow elements with `animate-pulse-glow`.
-4.  **Logo Animation**: The `BrandMark` has an `animated` prop.
+Based on the current "Consistency Operating System" architecture, the application is perfectly positioned to move from a "Habit Tracker" to a "Life Operating System." Here are the recommended next steps to deepen the product's value:
 
-The user's request "remove the auth card motion" most directly points to the entrance animation of the card itself. I will also remove the `shimmer-border` from the card to ensure it feels static as requested, while keeping the background and logo animations which provide ambient atmosphere without making the card itself feel "in motion".
+---
 
-### Proposed Changes:
--   **`src/pages/Auth.tsx`**:
-    -   Replace the `motion.div` wrapping the logo and card with a standard `div`.
-    -   Remove the `shimmer-border` class from the `Card` component.
-    -   Keep the `AnimatePresence` for the rotating quotes, as that is a text transition rather than "card motion".
+## 1. Identity Alignment Dashboard
+Currently, habits are linked to identities, but that connection is mostly invisible.
+- **The "Voting" System**: Visualize James Clear's concept that "every action is a vote for the person you wish to become."
+- **Progress Bars**: Show alignment percentages for each identity (e.g., "The Writer" - 85% aligned this week).
+- **Identity Evolution**: Track how your identities change over months, not just days.
 
-### Technical Steps:
-1.  Modify `src/pages/Auth.tsx` to remove the `motion.div` wrapper around the main content (lines 62-67 and the closing tag).
-2.  Remove `shimmer-border` from the `Card` className (line 81).
+## 2. Seasonal Modes (Grace vs. Sprint)
+Life isn't linear. The database already contains a `seasonal_modes` table that can be activated.
+- **Sprint Mode**: For when energy is high; rewards "Full" versions more heavily.
+- **Grace Mode**: For travel, sickness, or high stress; shifts the UI to celebrate "Minimum" versions as the primary win.
+- **Maintenance Season**: Focuses purely on consistency over intensity to prevent burnout.
+
+## 3. Post-Onboarding Habit Management
+Currently, habits can only be configured during the onboarding flow.
+- **Habit OS View**: A dedicated page to audit your "Operating System"—archive habits that no longer serve you, edit the "Min/Full" versions based on your consistency data, and re-link them to new identities.
+
+## 4. AI Consistency Coach (Real Reflection)
+The "AI Mirror" on the dashboard currently uses simple logic. We can upgrade this to a true AI Coach.
+- **Behavioral Analysis**: The AI analyzes your `consistency_scores` (Resilience, Recovery, Energy Alignment).
+- **Proactive Advice**: If your "Recovery Speed" is dropping, the AI might suggest switching to "Grace Mode" for a few days to prevent a total break in consistency.
+
+---
+
+### Technical Implementation Priority
+| Priority | Feature | Complexity | Impact |
+|:---:|---|:---:|:---:|
+| 1 | **Habit Management View** | Medium | Essential for long-term use |
+| 2 | **Identity Progress Visualization** | Low | High emotional reward |
+| 3 | **AI Coach (Edge Function)** | Medium | High premium feel |
+| 4 | **Seasonal Mode Switching** | Medium | Unique consistency protection |
+
+### Implementation Design for Habit Management
+````text
+New Page: /habits (or /identities)
+- Layout: Grid of current Identities
+- Card Content: List of habits under that identity
+- Interaction: "Add Habit", "Edit Version", "Archive"
+- Integration: Reuses `useActiveHabits` and adds `useArchiveHabit` / `useUpdateHabit` mutations.
+````
+
+**What should we tackle first?** I'm ready to build the **Habit Management View** or the **Identity Alignment Dashboard** whenever you're ready.
