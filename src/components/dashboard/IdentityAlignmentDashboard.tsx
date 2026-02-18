@@ -5,6 +5,7 @@ import { useIdentityAlignment } from "@/hooks/useIdentityAlignment";
 import { motion, AnimatePresence } from "framer-motion";
 import { Vote, ChevronDown, ChevronUp, Check, Minus, X, Target } from "lucide-react";
 import { PremiumIcon } from "@/components/ui/PremiumIcon";
+import AddIdentityForm from "./AddIdentityForm";
 
 const IDENTITY_GRADIENTS: Record<string, string> = {
   violet: "from-[hsl(258,62%,63%)] to-[hsl(215,70%,62%)]",
@@ -58,13 +59,16 @@ export function IdentityAlignmentDashboard() {
             Every action is a vote for the person you wish to become
           </p>
         </div>
-        <Card className="glass-card-premium px-4 py-2">
-          <div className="flex items-center gap-2">
-            <Vote className="h-4 w-4 text-primary" />
-            <span className="font-display font-bold text-foreground text-lg">{totalVotes}</span>
-            <span className="text-xs text-muted-foreground">votes this week</span>
-          </div>
-        </Card>
+        <div className="flex items-center gap-3">
+          <AddIdentityForm />
+          <Card className="glass-card-premium px-4 py-2">
+            <div className="flex items-center gap-2">
+              <Vote className="h-4 w-4 text-primary" />
+              <span className="font-display font-bold text-foreground text-lg">{totalVotes}</span>
+              <span className="text-xs text-muted-foreground">votes this week</span>
+            </div>
+          </Card>
+        </div>
       </div>
 
       {/* Identity Cards */}

@@ -10,6 +10,7 @@ import { ConsistencyGauge } from "./ConsistencyGauge";
 import { MomentumChart } from "./MomentumChart";
 import { FrictionModal } from "./FrictionModal";
 import { FrictionSummary } from "./FrictionSummary";
+import TodoList from "./TodoList";
 import { PremiumIcon } from "@/components/ui/PremiumIcon";
 import { format, subDays } from "date-fns";
 import { useMemo } from "react";
@@ -278,6 +279,9 @@ export function DashboardCenter() {
           )}
         </CardContent>
       </Card>
+
+      {/* To-Do List */}
+      <TodoList />
 
       {/* Friction Summary */}
       <FrictionSummary />

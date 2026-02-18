@@ -205,6 +205,30 @@ export function useRecentLogs(days = 30) {
   });
 }
 
+export function useCreateIdentity() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (identity: { label: string; emoji: string; color: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const { data, error } = await supabase
+        .from("identities")
+        .insert({
+          user_id: user.id,
+          label: identity.label,
+          emoji: identity.emoji,
+          color: identity.color,
+        })
+        .select();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["identities"] });
+    },
+  });
+}
+
 export function useWeekFriction() {
   return useQuery({
     queryKey: ["week-friction"],
