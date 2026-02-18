@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,25 +11,63 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useCreateIdentity } from "@/hooks/useHabits";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const AddIdentityForm = () => {
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
   const createIdentity = useCreateIdentity();
+  const queryClient = useQueryClient();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const trimmed = label.trim();
     if (!trimmed) return;
+    setIsCreating(true);
+
     createIdentity.mutate(
       { label: trimmed, emoji: "🎯", color: "teal" },
       {
-        onSuccess: () => {
-          toast.success("Identity created!");
+        onSuccess: async (data) => {
+          const identityId = data?.[0]?.id;
+          if (!identityId) {
+            toast.success("Identity created!");
+            setIsCreating(false);
+            setLabel("");
+            setOpen(false);
+            return;
+          }
+
+          toast.success("Identity created! Generating logo…");
+
+          // Fire off logo generation in background
+          try {
+            const { data: logoData, error } = await supabase.functions.invoke(
+              "generate-identity-logo",
+              { body: { label: trimmed, identityId } }
+            );
+
+            if (error) {
+              console.error("Logo generation error:", error);
+              toast.error("Logo generation failed — you can retry later.");
+            } else {
+              toast.success("Logo generated!");
+            }
+          } catch (e) {
+            console.error("Logo generation error:", e);
+          }
+
+          queryClient.invalidateQueries({ queryKey: ["identities"] });
+          setIsCreating(false);
           setLabel("");
           setOpen(false);
         },
-        onError: () => toast.error("Failed to create identity"),
+        onError: () => {
+          toast.error("Failed to create identity");
+          setIsCreating(false);
+        },
       }
     );
   };
@@ -52,19 +90,27 @@ const AddIdentityForm = () => {
               placeholder="e.g. Athlete, Creator, Leader"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+              onKeyDown={(e) => e.key === "Enter" && !isCreating && handleSubmit()}
+              disabled={isCreating}
             />
             <p className="text-xs text-muted-foreground">
-              Define who you want to become — every habit is a vote for this identity.
+              A unique AI-generated logo will be created for your identity.
             </p>
           </div>
 
           <Button
             className="w-full"
             onClick={handleSubmit}
-            disabled={!label.trim() || createIdentity.isPending}
+            disabled={!label.trim() || isCreating}
           >
-            {createIdentity.isPending ? "Creating…" : "Create Identity"}
+            {isCreating ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Generating Logo…
+              </>
+            ) : (
+              "Create Identity"
+            )}
           </Button>
         </div>
       </DialogContent>

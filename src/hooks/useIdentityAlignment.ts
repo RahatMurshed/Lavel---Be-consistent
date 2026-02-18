@@ -6,6 +6,7 @@ export interface IdentityAlignment {
   label: string;
   emoji: string | null;
   color: string | null;
+  logo_url: string | null;
   totalVotes: number;
   fullVotes: number;
   minVotes: number;
@@ -73,6 +74,7 @@ export function useIdentityAlignment(days = 7) {
         label: identity.label,
         emoji: identity.emoji,
         color: identity.color,
+        logo_url: (identity as any).logo_url ?? null,
         totalVotes,
         fullVotes: totalFull,
         minVotes: totalMin,
