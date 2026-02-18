@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { IdentityAlignmentDashboard } from "@/components/dashboard/IdentityAlignmentDashboard";
+import { IdentityDriftMonitor } from "@/components/dashboard/IdentityDriftMonitor";
 import { DashboardRight } from "@/components/dashboard/DashboardRight";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -66,7 +67,12 @@ const IdentityPage = () => {
             </div>
           </header>
           <div className="flex-1 flex overflow-hidden">
-            <IdentityAlignmentDashboard />
+            <div className="flex-1 overflow-y-auto">
+              <IdentityAlignmentDashboard />
+              <div className="px-6 pb-6">
+                <IdentityDriftMonitor />
+              </div>
+            </div>
             <DashboardRight />
           </div>
         </div>
