@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, subDays, startOfDay } from "date-fns";
+import { format, subDays } from "date-fns";
 
 const today = () => format(new Date(), "yyyy-MM-dd");
 
@@ -34,6 +34,91 @@ export function useActiveHabits() {
         .order("sort_order");
       if (error) throw error;
       return data;
+    },
+  });
+}
+
+export function useAllHabits() {
+  return useQuery({
+    queryKey: ["all-habits"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const { data, error } = await supabase
+        .from("habits")
+        .select("*, identities(id, label, color, emoji)")
+        .eq("user_id", user.id)
+        .order("sort_order");
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useUpdateHabit() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      updates,
+    }: {
+      id: string;
+      updates: {
+        name?: string;
+        full_version?: string;
+        min_version?: string;
+        cue_trigger?: string | null;
+        identity_id?: string | null;
+        active?: boolean;
+        sort_order?: number;
+      };
+    }) => {
+      const { data, error } = await supabase
+        .from("habits")
+        .update(updates)
+        .eq("id", id)
+        .select();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-habits"] });
+      queryClient.invalidateQueries({ queryKey: ["active-habits"] });
+      queryClient.invalidateQueries({ queryKey: ["identities"] });
+    },
+  });
+}
+
+export function useCreateHabit() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (habit: {
+      name: string;
+      full_version: string;
+      min_version: string;
+      cue_trigger?: string;
+      identity_id?: string | null;
+    }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const { data, error } = await supabase
+        .from("habits")
+        .insert({
+          user_id: user.id,
+          name: habit.name,
+          full_version: habit.full_version,
+          min_version: habit.min_version,
+          cue_trigger: habit.cue_trigger || null,
+          identity_id: habit.identity_id || null,
+        })
+        .select();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-habits"] });
+      queryClient.invalidateQueries({ queryKey: ["active-habits"] });
+      queryClient.invalidateQueries({ queryKey: ["identities"] });
     },
   });
 }
