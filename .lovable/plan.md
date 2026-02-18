@@ -1,219 +1,120 @@
 
+# Advanced Data-Driven Analytics Explorer
 
-# Full System Rebuild: Premium Growth Intelligence Platform
+## Problem
 
-## Overview
+The current Analytics page shows basic completion-rate charts and simple skill counts. The PRD demands **serious analytics for nerds and achievers** -- deep data intelligence with behavioral insights, energy/mood correlations, identity performance tracking, XP trajectory modeling, streak analysis, and exportable growth reports across all time scales.
 
-This plan transforms "Lavel" from an identity-based habit tracker into a full **Premium Growth Intelligence System** as defined in the PRD. The existing foundation (auth, habits, identity, AI coaching, seasonal modes) is strong and will be preserved and extended. New modules for **Skill Tracking**, **Gamification (XP/Prestige)**, **Social/Leaderboards**, and **Multi-Scale Analytics** will be built on top.
+## What's Missing (per PRD Section 5)
 
----
-
-## What Already Exists (Keep and Enhance)
-
-- Authentication + onboarding flow
-- Habit tracking with min/full versions and friction logging
-- Identity system with alignment percentages
-- Seasonal modes (Sprint/Grace/Maintenance)
-- AI Consistency Coach edge function
-- Daily check-in and momentum chart
-- Premium dark UI with glass morphism and animations
-
----
-
-## Phase 1: Database Schema Expansion
-
-New tables required via migrations:
-
-```text
-skills
-  id, user_id, name, category, date_learned, notes, created_at
-
-xp_events
-  id, user_id, source (habit_full, habit_min, skill_learned, challenge_completed),
-  xp_amount, created_at
-
-user_gamification
-  id, user_id, total_xp, prestige_level (bronze/silver/gold/platinum/diamond),
-  current_streak, longest_streak, updated_at
-
-badges
-  id, user_id, badge_key, badge_name, earned_at
-
-groups
-  id, name, description, invite_code, created_by, created_at
-
-group_members
-  id, group_id, user_id, role (admin/member), joined_at
-
-growth_reports
-  id, user_id, report_type (weekly/monthly/half_yearly/yearly),
-  period_start, period_end, report_data (jsonb), created_at
-```
-
-All tables get RLS policies scoped to authenticated users. Groups use member-based access.
+1. **All-Time period** -- only Weekly/Monthly/Half-Year/Yearly exist
+2. **Streak analytics** -- no current/longest streak visualization or streak heatmap
+3. **Energy and mood trend correlation** -- daily_checkins data (energy, mood, stress) is never surfaced in analytics
+4. **Identity alignment performance** -- per-identity completion tracking over time is missing
+5. **XP accumulation curve** -- xp_events table is queried but never charted over time
+6. **Consistency Score radar** -- the 5D consistency score (completion ratio, trend stability, recovery speed, resilience, energy alignment) is computed but never visualized here
+7. **Behavioral insights panel** -- no AI-generated text insights summarizing the data
+8. **Friction analysis** -- friction_trigger data from behavior_logs is not surfaced
+9. **Prestige rank progression** -- no visualization of rank trajectory
+10. **Exportable/shareable reports** -- no export functionality
 
 ---
 
-## Phase 2: Gamification Engine
+## Implementation Plan
 
-### XP System
-- Habit logged (Full): +20 XP
-- Habit logged (Min): +10 XP
-- Skill learned: +30 XP
-- Challenge completed: +50 XP
-- Daily streak bonus: +5 XP per consecutive day
+### 1. Add "All-Time" Period Option
 
-### Prestige Levels
-- Bronze: 0 XP
-- Silver: 500 XP
-- Gold: 2,000 XP
-- Platinum: 5,000 XP
-- Diamond: 15,000 XP
+Add a fifth period to the PERIODS array: `{ key: "all", label: "All-Time", days: 9999, bucketLabel: "Month" }`. The `useRecentLogs` hook already accepts a `days` parameter, so this works automatically.
 
-### Badges
-- "Consistency Master" -- 30-day streak
-- "Skill Builder" -- 10 skills logged
-- "Growth Champion" -- all habits completed for a full week
-- "Early Bird" -- check-in before 7 AM for 7 days
-- "Iron Will" -- recover from 3+ misses in a row
+### 2. New Hook: `useAnalyticsData`
 
-### Implementation
-- Hook: `useGamification` (reads XP, level, badges)
-- XP awarded automatically on habit log and skill creation via database trigger or mutation side-effect
-- Level-up animation overlay component
-- Badge notification toasts
+Create `src/hooks/useAnalyticsData.ts` that consolidates all data sources for the analytics page:
 
----
+- **XP timeline**: Query `xp_events` table grouped by date, compute cumulative XP curve
+- **Energy/mood trends**: Query `daily_checkins` for energy and stress over the selected period
+- **Friction analysis**: Query `behavior_logs` where `friction_trigger IS NOT NULL` and aggregate top friction tags
+- **Streak calculation**: Compute current and longest streaks from behavior_logs date sequences
+- **Identity performance**: Use `useIdentityAlignment` with dynamic day ranges per period
 
-## Phase 3: Skill and Learning Tracker
+### 3. Rebuild Analytics Page with 6 Sections
 
-### New Page: `/dashboard/skills`
-- Log skills with name, category, date, and optional notes
-- Skill timeline visualization (vertical timeline with category color coding)
-- Category filter and search
-- Skill count stats card on dashboard
+Restructure `src/pages/Analytics.tsx` into a tabbed/scrollable layout with these sections:
 
-### Hook: `useSkills`
-- CRUD operations for skills table
-- Category aggregation for charts
+**Section A -- Summary Stats Row (enhanced)**
+- Avg Completion % (with delta)
+- Current Streak (with longest streak indicator)
+- Total XP (with prestige rank badge inline)
+- Skills Learned (this period)
+- Consistency Score (overall number)
+- Habits Completed (with delta)
 
----
+**Section B -- Completion and XP Charts (existing, enhanced)**
+- Completion rate area chart (keep existing)
+- XP accumulation curve (new line chart from xp_events, showing cumulative XP over time with prestige level threshold lines)
 
-## Phase 4: Growth Dashboard and Multi-Scale Analytics
+**Section C -- Consistency Radar**
+- Radar chart (recharts RadarChart) showing the 5 dimensions from `useConsistencyScore`: Completion Ratio, Trend Stability, Recovery Speed, Resilience Index, Energy Alignment
+- Each axis 0-100, with a filled polygon showing the user's profile
 
-### New Page: `/dashboard/analytics` (rebuild existing placeholder)
-- Time period selector: Weekly / Monthly / Half-Yearly / Yearly / All-Time
-- Animated charts (recharts):
-  - Completion rate over time (area chart)
-  - Habits vs Skills growth (bar chart)
-  - XP accumulation curve
-  - Comparative growth % vs previous period
-- Stats cards: total habits completed, skills learned, current streak, XP earned
+**Section D -- Behavioral Intelligence**
+- **Energy-Completion Correlation**: Scatter-style chart or dual-axis line chart overlaying daily energy level with completion rate to show correlation
+- **Mood Trend**: Line chart of daily mood/energy from `daily_checkins`
+- **Friction Heatmap**: Horizontal bar chart of top friction triggers (from `useWeekFriction`, extended to match period)
+- **Best/Worst Days**: Identify which days of the week have highest/lowest completion rates
 
-### Reporting
-- Auto-generated reports stored in `growth_reports` table
-- Exportable/shareable report cards (rendered as styled components)
-- Edge function `generate-growth-report` to compile period data
+**Section E -- Identity Performance**
+- Grouped bar chart or radar showing each identity's alignment % over the selected period
+- Per-identity trend lines showing drift direction
+
+**Section F -- Habit Streaks Heatmap**
+- GitHub-style contribution grid: a calendar heatmap where each cell represents a day, colored by completion % (green gradient for high, red for low, gray for no data)
+- Shows last 90-365 days depending on period selection
+
+### 4. Exportable Report Card
+
+Add an "Export Report" button that renders a summary as a styled, self-contained component and uses `html2canvas` or browser print API to generate a shareable image/PDF. Since adding a new dependency may not be ideal, we'll use the browser's native `window.print()` with a print-optimized CSS class as a first pass.
+
+### 5. AI Growth Insights
+
+Add a collapsible "AI Insights" card that calls the existing `consistency-coach` edge function (or a new lightweight variant) to generate a 3-4 sentence narrative summary of the analytics data -- e.g., "Your completion rate is up 12% this month. Tuesdays are your strongest day. Your 'Fitness' identity is drifting -- consider re-engaging morning workouts."
 
 ---
 
-## Phase 5: Social and Group Features
+## Technical Details
 
-### New Pages
-- `/dashboard/groups` -- list groups, create/join via invite code
-- `/dashboard/leaderboard` -- individual rankings by XP and growth %
+### New Files
+| File | Purpose |
+|------|---------|
+| `src/hooks/useAnalyticsData.ts` | Consolidated hook for XP timeline, energy trends, friction data, streak stats |
+| `src/components/analytics/ConsistencyRadar.tsx` | 5D radar chart component |
+| `src/components/analytics/XPTimeline.tsx` | XP accumulation curve with prestige thresholds |
+| `src/components/analytics/EnergyCorrelation.tsx` | Dual-axis energy vs completion chart |
+| `src/components/analytics/FrictionAnalysis.tsx` | Horizontal bar chart of friction triggers |
+| `src/components/analytics/StreakHeatmap.tsx` | GitHub-style calendar heatmap |
+| `src/components/analytics/IdentityPerformance.tsx` | Per-identity alignment chart |
+| `src/components/analytics/AIInsights.tsx` | AI-generated narrative insights card |
+| `src/components/analytics/BestWorstDays.tsx` | Day-of-week performance breakdown |
 
-### Individual Leaderboard
-- Ranks users by total XP, growth %, and achievements
-- "Top People" highlight section
-- Weekly/monthly/all-time filters
+### Modified Files
+| File | Change |
+|------|--------|
+| `src/pages/Analytics.tsx` | Complete rebuild to compose all new sections |
+| `src/hooks/useHabits.ts` | Extend `useWeekFriction` to accept configurable days parameter |
 
-### Group Features
-- Create group with name and auto-generated invite code
-- Join group via code
-- Group leaderboard comparing members
-- Group accountability feed (recent member activity)
+### Data Sources Used
+- `behavior_logs` -- completion rates, streaks, friction triggers
+- `daily_checkins` -- energy, mood, stress levels
+- `xp_events` -- XP timeline and accumulation
+- `user_gamification` -- current XP, prestige level, streaks
+- `consistency_scores` -- 5D consistency metrics
+- `identities` + `habits` -- identity alignment performance
+- `skills` -- skill growth curve
 
-### Privacy
-- Leaderboard participation is opt-in via profile setting
-- Display names only (no email exposure)
+### No Database Migrations Needed
+All data already exists in the tables. This is purely a frontend analytics visualization upgrade.
 
----
-
-## Phase 6: UI/UX Premium Overhaul
-
-### Dark/Light Mode
-- Add `next-themes` ThemeProvider (already installed)
-- Light mode CSS variables in `:root` with dark overrides
-- Theme toggle in header
-
-### Landing Page Refresh
-- Update hero copy to match PRD vision ("Premium Growth Intelligence")
-- Add social proof section and feature highlights for new modules
-- Prestige rank preview in CTA section
-
-### Dashboard Layout Update
-- Add XP bar and prestige badge to header
-- Gamification stats row (XP, Level, Streak, Badges)
-- Skill count in sidebar identity cards
-- Animated level-up overlay
-
-### Navigation Update
-- Add sidebar links: Skills, Analytics, Groups, Leaderboard
-- Prestige rank badge next to user name in header
-
----
-
-## Phase 7: AI Coaching Enhancement
-
-### Updated Edge Function
-- Include skill data and XP trajectory in AI analysis
-- Generate adaptive challenges ("Log 3 skills this week to reach Gold")
-- Seasonal quest suggestions based on current period
-
-### AI Nudges Component
-- Smart notification cards on dashboard
-- Context-aware tips based on time of day, energy, and recent activity
-
----
-
-## Implementation Order
-
-| Step | What | New Files | Migrations |
-|------|-------|-----------|------------|
-| 1 | Database migrations for all new tables | -- | Yes (7 tables) |
-| 2 | XP/Gamification hooks and triggers | `useGamification.ts`, `useXP.ts` | -- |
-| 3 | Gamification UI (XP bar, level badge, level-up animation) | `XPBar.tsx`, `PrestigeBadge.tsx`, `LevelUpOverlay.tsx` | -- |
-| 4 | Skill tracker (hook + page + components) | `useSkills.ts`, `Skills.tsx`, `SkillTimeline.tsx` | -- |
-| 5 | Analytics dashboard rebuild | `GrowthAnalytics.tsx`, `PeriodSelector.tsx`, `GrowthChart.tsx` | -- |
-| 6 | Growth report edge function | `generate-growth-report/index.ts` | -- |
-| 7 | Groups (tables already created, hook + pages) | `useGroups.ts`, `Groups.tsx`, `GroupDetail.tsx` | -- |
-| 8 | Leaderboard (hook + page) | `useLeaderboard.ts`, `Leaderboard.tsx` | -- |
-| 9 | Dark/Light mode toggle | `ThemeToggle.tsx`, CSS updates | -- |
-| 10 | Landing page refresh | Update `Index.tsx` | -- |
-| 11 | Dashboard header with XP + prestige | Update `Dashboard.tsx`, `AppSidebar.tsx` | -- |
-| 12 | AI coaching upgrade | Update `consistency-coach/index.ts` | -- |
-| 13 | Badge system and notifications | `BadgeNotification.tsx`, badge trigger logic | -- |
-
----
-
-## Suggested Additional Features (Beyond PRD)
-
-1. **Focus Timer** -- Built-in Pomodoro timer linked to habits for "time invested" tracking
-2. **Weekly Reflection Journal** -- AI-prompted end-of-week reflection that feeds into coaching
-3. **Habit Streaks Heatmap** -- GitHub-style contribution grid showing consistency patterns
-4. **Achievement Showcase** -- Public profile page to share prestige rank and top badges
-5. **Smart Habit Suggestions** -- AI recommends new habits based on skill gaps and identity goals
-
----
-
-## Technical Notes
-
-- All new tables use `user_id` referencing auth users without foreign keys to `auth.users`
-- XP calculations happen client-side on log mutations (with server-side validation possible later)
-- Leaderboard queries use a database view or RPC for aggregated rankings
-- Group invite codes are 8-character alphanumeric strings generated on creation
-- Growth reports use the existing `weekly_reports` pattern extended to multiple periods
-- All new routes added to `App.tsx` under `/dashboard/*`
-- Existing seasonal modes, friction analysis, and identity alignment are preserved and integrated into the new analytics
-
+### Dependencies
+- `recharts` RadarChart (already installed) for the consistency radar
+- All other chart types (Area, Bar, Line, Pie, Scatter) already available in recharts
+- `framer-motion` (already installed) for section animations
+- No new packages required
