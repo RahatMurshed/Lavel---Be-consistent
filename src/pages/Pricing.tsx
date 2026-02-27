@@ -30,7 +30,7 @@ const PRO_FEATURES = [
 
 export default function Pricing() {
   const navigate = useNavigate();
-  const { isPro, isLoading } = useSubscription();
+  const { isPro, isTrial, trialDaysLeft, isLoading } = useSubscription();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const handleCheckout = async () => {
