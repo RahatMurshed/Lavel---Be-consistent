@@ -18,6 +18,7 @@ import Leaderboard from "./pages/Leaderboard";
 import GroupDetail from "./pages/GroupDetail";
 import Pricing from "./pages/Pricing";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import Settings from "./pages/Settings";
 import { DashboardLayout } from "./components/DashboardLayout";
 import NotFound from "./pages/NotFound";
 
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/dashboard/groups" element={<DashboardLayout><Groups /></DashboardLayout>} />
             <Route path="/dashboard/groups/:id" element={<DashboardLayout><GroupDetail /></DashboardLayout>} />
             <Route path="/dashboard/leaderboard" element={<DashboardLayout><Leaderboard /></DashboardLayout>} />
+            <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
             <Route path="/dashboard/*" element={<Dashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

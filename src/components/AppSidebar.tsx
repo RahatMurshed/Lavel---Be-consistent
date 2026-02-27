@@ -9,7 +9,7 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { NavLink } from "@/components/NavLink";
-import { LayoutGrid, Flame, TrendingUp, Sparkles, Target, BookOpen, Users, Trophy, Crown, CreditCard } from "lucide-react";
+import { LayoutGrid, Flame, TrendingUp, Sparkles, Target, BookOpen, Users, Trophy, Crown, CreditCard, Settings } from "lucide-react";
 import { useIdentities } from "@/hooks/useHabits";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SeasonalModeSwitcher } from "@/components/dashboard/SeasonalModeSwitcher";
@@ -30,6 +30,7 @@ const navItems = [
   { title: "Leaderboard", url: "/dashboard/leaderboard", icon: Trophy, pro: true },
   { title: "AI Mirror", url: "/dashboard/mirror", icon: Sparkles, pro: true },
   { title: "Groups", url: "/dashboard/groups", icon: Users, pro: true },
+  { title: "Settings", url: "/dashboard/settings", icon: Settings, pro: false },
 ];
 
 
