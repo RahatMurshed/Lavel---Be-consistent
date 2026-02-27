@@ -9,26 +9,44 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { NavLink } from "@/components/NavLink";
-import { LayoutGrid, Flame, TrendingUp, Sparkles, Target, BookOpen, Users, Trophy } from "lucide-react";
+import { LayoutGrid, Flame, TrendingUp, Sparkles, Target, BookOpen, Users, Trophy, Crown, CreditCard } from "lucide-react";
 import { useIdentities } from "@/hooks/useHabits";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SeasonalModeSwitcher } from "@/components/dashboard/SeasonalModeSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const navItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutGrid },
-  { title: "Identity", url: "/dashboard/identity", icon: Target },
-  { title: "Habits", url: "/dashboard/habits", icon: Flame },
-  { title: "Skills", url: "/dashboard/skills", icon: BookOpen },
-  { title: "Analytics", url: "/dashboard/analytics", icon: TrendingUp },
-  { title: "Leaderboard", url: "/dashboard/leaderboard", icon: Trophy },
-  { title: "AI Mirror", url: "/dashboard/mirror", icon: Sparkles },
-  { title: "Groups", url: "/dashboard/groups", icon: Users },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutGrid, pro: false },
+  { title: "Identity", url: "/dashboard/identity", icon: Target, pro: false },
+  { title: "Habits", url: "/dashboard/habits", icon: Flame, pro: false },
+  { title: "Skills", url: "/dashboard/skills", icon: BookOpen, pro: false },
+  { title: "Analytics", url: "/dashboard/analytics", icon: TrendingUp, pro: true },
+  { title: "Leaderboard", url: "/dashboard/leaderboard", icon: Trophy, pro: true },
+  { title: "AI Mirror", url: "/dashboard/mirror", icon: Sparkles, pro: true },
+  { title: "Groups", url: "/dashboard/groups", icon: Users, pro: true },
 ];
 
 
 export function AppSidebar() {
   const { data: identities, isLoading } = useIdentities();
+  const { isPro, isLoading: subLoading } = useSubscription();
+  const navigate = useNavigate();
+
+  const handleManageSubscription = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to open billing portal");
+    }
+  };
 
   return (
     <Sidebar className="border-r border-border/50">
@@ -111,12 +129,47 @@ export function AppSidebar() {
                       activeClassName="bg-sidebar-accent text-primary font-medium border-l-2 border-primary"
                     >
                       <item.icon className="h-4 w-4 mr-2" />
-                      <span>{item.title}</span>
+                      <span className="flex-1">{item.title}</span>
+                      {item.pro && !isPro && !subLoading && (
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/30 text-primary">
+                          PRO
+                        </Badge>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Plan */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
+            Plan
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <div className="px-3 py-2">
+              {isPro ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Crown className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-medium text-foreground">Pro Plan</span>
+                  </div>
+                  <Button variant="ghost" size="sm" className="w-full justify-start text-xs h-7" onClick={handleManageSubscription}>
+                    <CreditCard className="h-3 w-3 mr-1.5" /> Manage Billing
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  className="btn-gradient w-full text-xs"
+                  onClick={() => navigate("/pricing")}
+                >
+                  <Crown className="h-3 w-3 mr-1.5" /> Upgrade to Pro
+                </Button>
+              )}
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
 

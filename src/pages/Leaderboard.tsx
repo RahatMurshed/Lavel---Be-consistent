@@ -6,12 +6,20 @@ import { useGroupLeaderboard } from "@/hooks/useGroupLeaderboard";
 import { getPrestigeLevel } from "@/hooks/useGamification";
 import { Trophy, Medal, Users, Flame, Crown, Zap } from "lucide-react";
 import { motion } from "framer-motion";
+import { useSubscription } from "@/hooks/useSubscription";
+import { UpgradePrompt } from "@/components/UpgradePrompt";
 
 const MEDAL_COLORS = ["text-yellow-500", "text-gray-400", "text-amber-600"];
 
 export default function Leaderboard() {
+  const { isPro, isLoading: subLoading } = useSubscription();
   const { data: individuals, isLoading: indLoading } = useLeaderboard();
   const { data: groupRankings, isLoading: grpLoading } = useGroupLeaderboard();
+
+  if (!subLoading && !isPro) {
+    return <UpgradePrompt feature="Leaderboard" />;
+  }
+
 
   return (
     <div className="space-y-6">

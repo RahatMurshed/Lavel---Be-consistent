@@ -8,12 +8,15 @@ import { DashboardRight } from "@/components/dashboard/DashboardRight";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { UpgradePrompt } from "@/components/UpgradePrompt";
+import { useSubscription } from "@/hooks/useSubscription";
 import type { User } from "@supabase/supabase-js";
 
 const MirrorPage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { isPro, isLoading: subLoading } = useSubscription();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -41,7 +44,7 @@ const MirrorPage = () => {
     navigate("/auth");
   };
 
-  if (!user || loading) return null;
+  if (!user || loading || subLoading) return null;
 
   return (
     <SidebarProvider>
@@ -66,8 +69,16 @@ const MirrorPage = () => {
             </div>
           </header>
           <div className="flex-1 flex overflow-hidden">
-            <ConsistencyCoach />
-            <DashboardRight />
+            {isPro ? (
+              <>
+                <ConsistencyCoach />
+                <DashboardRight />
+              </>
+            ) : (
+              <div className="flex-1">
+                <UpgradePrompt feature="AI Mirror" />
+              </div>
+            )}
           </div>
         </div>
       </div>
