@@ -36,7 +36,7 @@ const navItems = [
 
 export function AppSidebar() {
   const { data: identities, isLoading } = useIdentities();
-  const { isPro, isLoading: subLoading } = useSubscription();
+  const { isPro, isTrial, trialDaysLeft, isLoading: subLoading } = useSubscription();
   const navigate = useNavigate();
 
   const handleManageSubscription = async () => {
@@ -151,7 +151,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <div className="px-3 py-2">
-              {isPro ? (
+              {isPro && !isTrial ? (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Crown className="h-4 w-4 text-primary" />
@@ -159,6 +159,23 @@ export function AppSidebar() {
                   </div>
                   <Button variant="ghost" size="sm" className="w-full justify-start text-xs h-7" onClick={handleManageSubscription}>
                     <CreditCard className="h-3 w-3 mr-1.5" /> Manage Billing
+                  </Button>
+                </div>
+              ) : isTrial ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Crown className="h-4 w-4 text-amber-500" />
+                    <span className="text-xs font-medium text-foreground">Free Trial</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    {trialDaysLeft} day{trialDaysLeft !== 1 ? "s" : ""} remaining
+                  </p>
+                  <Button
+                    size="sm"
+                    className="btn-gradient w-full text-xs"
+                    onClick={() => navigate("/pricing")}
+                  >
+                    <Crown className="h-3 w-3 mr-1.5" /> Upgrade Now
                   </Button>
                 </div>
               ) : (
