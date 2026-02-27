@@ -1,4 +1,6 @@
 import { useState, useMemo, useRef } from "react";
+import { useSubscription } from "@/hooks/useSubscription";
+import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useActiveHabits, useAllHabits, useRecentLogs } from "@/hooks/useHabits";
@@ -52,6 +54,7 @@ const AXIS_TICK = { fontSize: 10, fill: "hsl(220, 10%, 55%)" };
 const PIE_COLORS = ["hsl(152, 55%, 52%)", "hsl(38, 85%, 65%)", "hsl(0, 72%, 55%)"];
 
 export default function Analytics() {
+  const { isPro, isLoading: subLoading } = useSubscription();
   const [period, setPeriod] = useState<string>("month");
   const periodConfig = PERIODS.find((p) => p.key === period) || PERIODS[1];
   const days = periodConfig.days;
@@ -195,6 +198,10 @@ export default function Analytics() {
       };
     }).sort((a, b) => b.total - a.total);
   }, [allHabits, logs]);
+
+  if (!subLoading && !isPro) {
+    return <UpgradePrompt feature="Analytics" />;
+  }
 
   return (
     <div className="space-y-6 print:space-y-4" ref={reportRef}>

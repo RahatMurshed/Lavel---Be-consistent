@@ -7,9 +7,12 @@ import { useMyGroups, useCreateGroup, useJoinGroup } from "@/hooks/useGroups";
 import { motion } from "framer-motion";
 import { Users, Plus, LogIn, Copy, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { useSubscription } from "@/hooks/useSubscription";
+import { UpgradePrompt } from "@/components/UpgradePrompt";
 
 export default function Groups() {
   const navigate = useNavigate();
+  const { isPro, isLoading: subLoading } = useSubscription();
   const { data: groups, isLoading } = useMyGroups();
   const createGroup = useCreateGroup();
   const joinGroup = useJoinGroup();
@@ -37,6 +40,10 @@ export default function Groups() {
       toast.error("Invalid invite code");
     }
   };
+
+  if (!subLoading && !isPro) {
+    return <UpgradePrompt feature="Groups" />;
+  }
 
   return (
     <div className="space-y-6">

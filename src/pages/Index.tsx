@@ -64,9 +64,14 @@ const Index = () => {
             <BrandMark size="sm" />
             <span className="font-display font-bold text-xl gradient-text">Lavel</span>
           </div>
-          <Button variant="ghost" onClick={() => navigate("/auth")} className="hover:border hover:border-border/50">
-            Sign In <ArrowRight className="h-4 w-4 ml-1" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/pricing")}>
+              Pricing
+            </Button>
+            <Button variant="ghost" onClick={() => navigate("/auth")} className="hover:border hover:border-border/50">
+              Sign In <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         </nav>
 
         {/* Hero */}
@@ -96,9 +101,12 @@ const Index = () => {
                 className="btn-gradient text-base px-8 rounded-xl font-medium animate-glow-pulse"
                 onClick={() => navigate("/auth")}
               >
-                Get Started <ArrowRight className="h-4 w-4 ml-2" />
+                Start Free <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </motion.div>
+            <motion.p variants={fadeUp} className="text-xs text-muted-foreground mt-2 opacity-80">
+              Free forever • Pro from $9/mo
+            </motion.p>
             <motion.p variants={fadeUp} className="text-xs text-muted-foreground mt-6 opacity-60">
               Join 2,000+ people building consistency systems
             </motion.p>
