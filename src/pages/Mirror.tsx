@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { useSubscription } from "@/hooks/useSubscription";
+import { ProGateSkeleton } from "@/components/ProGateSkeleton";
 import type { User } from "@supabase/supabase-js";
 
 const MirrorPage = () => {
@@ -44,7 +45,8 @@ const MirrorPage = () => {
     navigate("/auth");
   };
 
-  if (!user || loading || subLoading) return null;
+  if (!user || loading) return null;
+  if (subLoading) return <ProGateSkeleton />;
 
   return (
     <SidebarProvider>
