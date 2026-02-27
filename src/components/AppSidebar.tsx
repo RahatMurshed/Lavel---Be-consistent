@@ -13,6 +13,7 @@ import { LayoutGrid, Flame, TrendingUp, Sparkles, Target, BookOpen, Users, Troph
 import { useIdentities } from "@/hooks/useHabits";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SeasonalModeSwitcher } from "@/components/dashboard/SeasonalModeSwitcher";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutGrid },
@@ -116,6 +117,18 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Theme */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
+            Appearance
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <div className="px-3 py-2">
+              <ThemeToggle />
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

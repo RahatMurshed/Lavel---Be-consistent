@@ -11,6 +11,63 @@
 
 @layer base {
   :root {
+    --background: 210 20% 96%;
+    --foreground: 200 18% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 200 18% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 18% 12%;
+
+    --primary: 180 65% 38%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 16% 90%;
+    --secondary-foreground: 200 18% 20%;
+
+    --muted: 210 14% 92%;
+    --muted-foreground: 200 10% 40%;
+
+    --accent: 180 65% 38%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 14% 86%;
+    --input: 210 14% 86%;
+    --ring: 180 65% 38%;
+
+    --radius: 0.75rem;
+
+    --chart-violet: 180 55% 45%;
+    --chart-teal: 172 45% 45%;
+    --chart-amber: 38 80% 55%;
+    --chart-rose: 350 60% 55%;
+    --chart-blue: 220 60% 50%;
+    --chart-emerald: 152 50% 42%;
+
+    --glass-bg: 210 18% 94%;
+    --glass-border: 210 14% 82%;
+    --glow-primary: 180 65% 38%;
+
+    --sidebar-background: 210 18% 97%;
+    --sidebar-foreground: 200 18% 25%;
+    --sidebar-primary: 180 65% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 14% 92%;
+    --sidebar-accent-foreground: 200 18% 12%;
+    --sidebar-border: 210 14% 88%;
+    --sidebar-ring: 180 65% 38%;
+
+    --success: 152 50% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 80% 55%;
+    --warning-foreground: 0 0% 10%;
+  }
+
+  .dark {
     --background: 200 18% 7%;
     --foreground: 220 20% 92%;
 
@@ -39,9 +96,6 @@
     --input: 200 14% 18%;
     --ring: 180 65% 48%;
 
-    --radius: 0.75rem;
-
-    /* Pastel accent palette for charts & identity colors */
     --chart-violet: 180 60% 55%;
     --chart-teal: 172 50% 55%;
     --chart-amber: 38 85% 65%;
@@ -49,12 +103,10 @@
     --chart-blue: 220 65% 58%;
     --chart-emerald: 152 55% 52%;
 
-    /* Glass-morphism */
     --glass-bg: 200 18% 12%;
     --glass-border: 200 14% 22%;
     --glow-primary: 180 65% 48%;
 
-    /* Sidebar */
     --sidebar-background: 200 18% 8%;
     --sidebar-foreground: 220 20% 80%;
     --sidebar-primary: 180 65% 48%;
@@ -64,7 +116,6 @@
     --sidebar-border: 200 14% 16%;
     --sidebar-ring: 180 65% 48%;
 
-    /* Success / Warning */
     --success: 152 55% 52%;
     --success-foreground: 0 0% 100%;
     --warning: 38 85% 65%;
