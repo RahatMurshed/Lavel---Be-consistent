@@ -21,6 +21,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import Settings from "./pages/Settings";
 import { DashboardLayout } from "./components/DashboardLayout";
 import NotFound from "./pages/NotFound";
+import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 
 const queryClient = new QueryClient();
 
@@ -30,27 +31,29 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/identity" element={<Identity />} />
-            <Route path="/dashboard/habits" element={<Habits />} />
-            <Route path="/dashboard/mirror" element={<Mirror />} />
-            <Route path="/dashboard/skills" element={<DashboardLayout><Skills /></DashboardLayout>} />
-            <Route path="/dashboard/analytics" element={<DashboardLayout><Analytics /></DashboardLayout>} />
-            <Route path="/dashboard/groups" element={<DashboardLayout><Groups /></DashboardLayout>} />
-            <Route path="/dashboard/groups/:id" element={<DashboardLayout><GroupDetail /></DashboardLayout>} />
-            <Route path="/dashboard/leaderboard" element={<DashboardLayout><Leaderboard /></DashboardLayout>} />
-            <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
-            <Route path="/dashboard/*" element={<Dashboard />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <SubscriptionProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard/identity" element={<Identity />} />
+              <Route path="/dashboard/habits" element={<Habits />} />
+              <Route path="/dashboard/mirror" element={<Mirror />} />
+              <Route path="/dashboard/skills" element={<DashboardLayout><Skills /></DashboardLayout>} />
+              <Route path="/dashboard/analytics" element={<DashboardLayout><Analytics /></DashboardLayout>} />
+              <Route path="/dashboard/groups" element={<DashboardLayout><Groups /></DashboardLayout>} />
+              <Route path="/dashboard/groups/:id" element={<DashboardLayout><GroupDetail /></DashboardLayout>} />
+              <Route path="/dashboard/leaderboard" element={<DashboardLayout><Leaderboard /></DashboardLayout>} />
+              <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+              <Route path="/dashboard/*" element={<Dashboard />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </SubscriptionProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ThemeProvider>
