@@ -8,6 +8,7 @@ import { Trophy, Medal, Users, Flame, Crown, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
+import { ProGateSkeleton } from "@/components/ProGateSkeleton";
 
 const MEDAL_COLORS = ["text-yellow-500", "text-gray-400", "text-amber-600"];
 
@@ -16,7 +17,11 @@ export default function Leaderboard() {
   const { data: individuals, isLoading: indLoading } = useLeaderboard();
   const { data: groupRankings, isLoading: grpLoading } = useGroupLeaderboard();
 
-  if (!subLoading && !isPro) {
+  if (subLoading) {
+    return <ProGateSkeleton />;
+  }
+
+  if (!isPro) {
     return <UpgradePrompt feature="Leaderboard" />;
   }
 

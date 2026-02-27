@@ -9,6 +9,7 @@ import { Users, Plus, LogIn, Copy, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
+import { ProGateSkeleton } from "@/components/ProGateSkeleton";
 
 export default function Groups() {
   const navigate = useNavigate();
@@ -41,7 +42,11 @@ export default function Groups() {
     }
   };
 
-  if (!subLoading && !isPro) {
+  if (subLoading) {
+    return <ProGateSkeleton />;
+  }
+
+  if (!isPro) {
     return <UpgradePrompt feature="Groups" />;
   }
 

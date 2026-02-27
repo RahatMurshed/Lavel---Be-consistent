@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
+import { ProGateSkeleton } from "@/components/ProGateSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useActiveHabits, useAllHabits, useRecentLogs } from "@/hooks/useHabits";
@@ -199,7 +200,11 @@ export default function Analytics() {
     }).sort((a, b) => b.total - a.total);
   }, [allHabits, logs]);
 
-  if (!subLoading && !isPro) {
+  if (subLoading) {
+    return <ProGateSkeleton />;
+  }
+
+  if (!isPro) {
     return <UpgradePrompt feature="Analytics" />;
   }
 
