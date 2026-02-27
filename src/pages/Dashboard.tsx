@@ -7,9 +7,11 @@ import { DashboardCenter } from "@/components/dashboard/DashboardCenter";
 import { DashboardRight } from "@/components/dashboard/DashboardRight";
 import { FeatureTour } from "@/components/dashboard/FeatureTour";
 import { HelpDrawer } from "@/components/dashboard/HelpDrawer";
+import { NotificationBell } from "@/components/NotificationBell";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
 const Dashboard = () => {
@@ -74,6 +76,7 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <NotificationBell />
               <HelpDrawer />
               <span className="text-sm text-muted-foreground hidden sm:block">
                 {user.user_metadata?.display_name || user.email}
