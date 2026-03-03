@@ -138,6 +138,23 @@ const Auth = () => {
               </Button>
             </form>
 
+            {isLogin && (
+              <div className="mt-4 p-3 rounded-lg bg-muted/50 border border-border/50">
+                <p className="text-xs text-muted-foreground mb-2 font-medium">Demo Credentials</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("admin@lavel.demo");
+                    setPassword("demo1234");
+                  }}
+                  className="w-full text-left text-xs text-muted-foreground hover:text-primary transition-colors flex items-center justify-between group"
+                >
+                  <span><span className="font-mono">admin@lavel.demo</span> / <span className="font-mono">demo1234</span></span>
+                  <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              </div>
+            )}
+
             <div className="mt-4 text-center">
               <button
                 onClick={() => setIsLogin(!isLogin)}
