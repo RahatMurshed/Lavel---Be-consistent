@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 const PRO_PRODUCT_ID = "prod_U3MLpsv4H1GTYC";
 const TRIAL_DAYS = 7;
 const STORAGE_KEY = "subscription_isPro";
+const DEMO_EMAIL = "admin@lavel.demo";
 
 interface SubscriptionState {
   isSubscribed: boolean;
@@ -121,9 +122,22 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     };
   }, [checkSubscription]);
 
-  const isPro = state.isLoading
-    ? cachedPro // optimistic while loading
-    : (state.isSubscribed && state.productId === PRO_PRODUCT_ID) || state.isTrial;
+  const [isDemoUser, setIsDemoUser] = useState(false);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsDemoUser(session?.user?.email === DEMO_EMAIL);
+    });
+    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsDemoUser(session?.user?.email === DEMO_EMAIL);
+    });
+    return () => authSub.unsubscribe();
+  }, []);
+
+  const isPro = isDemoUser
+    ? true
+    : state.isLoading
+      ? cachedPro
+      : (state.isSubscribed && state.productId === PRO_PRODUCT_ID) || state.isTrial;
 
   return (
     <SubscriptionContext.Provider value={{ ...state, isPro, checkSubscription }}>

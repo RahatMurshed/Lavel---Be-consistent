@@ -140,17 +140,38 @@ const Auth = () => {
 
             {isLogin && (
               <div className="mt-4 p-3 rounded-lg bg-muted/50 border border-border/50">
-                <p className="text-xs text-muted-foreground mb-2 font-medium">Demo Credentials</p>
+                <p className="text-xs text-muted-foreground mb-2 font-medium">Demo Admin Account</p>
                 <button
                   type="button"
-                  onClick={() => {
-                    setEmail("admin@lavel.demo");
-                    setPassword("demo1234");
+                  disabled={loading}
+                  onClick={async () => {
+                    setLoading(true);
+                    const demoEmail = "admin@lavel.demo";
+                    const demoPass = "demo1234";
+                    try {
+                      const { error: signInErr } = await supabase.auth.signInWithPassword({ email: demoEmail, password: demoPass });
+                      if (signInErr) {
+                        // Account doesn't exist — create it (auto-confirm is enabled)
+                        const { error: signUpErr } = await supabase.auth.signUp({
+                          email: demoEmail,
+                          password: demoPass,
+                          options: { data: { display_name: "Admin Demo" } },
+                        });
+                        if (signUpErr) throw signUpErr;
+                        const { error: retryErr } = await supabase.auth.signInWithPassword({ email: demoEmail, password: demoPass });
+                        if (retryErr) throw retryErr;
+                      }
+                      navigate("/dashboard");
+                    } catch (err: any) {
+                      toast({ title: "Demo login failed", description: err.message, variant: "destructive" });
+                    } finally {
+                      setLoading(false);
+                    }
                   }}
                   className="w-full text-left text-xs text-muted-foreground hover:text-primary transition-colors flex items-center justify-between group"
                 >
-                  <span><span className="font-mono">admin@lavel.demo</span> / <span className="font-mono">demo1234</span></span>
-                  <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <span>🔑 <span className="font-medium">Sign in as Admin Demo</span> <span className="text-muted-foreground/60">(all features unlocked)</span></span>
+                  {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />}
                 </button>
               </div>
             )}
