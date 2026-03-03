@@ -62,21 +62,20 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required" }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
       const errText = await response.text();
       console.error("AI gateway error:", response.status, errText);
-      throw new Error("AI generation failed");
+      // Return a fallback quote instead of an error status so the client always gets a 200
+      const fallbackQuotes = [
+        "Consistency isn't about being perfect — it's about showing up. You're here, and that matters.",
+        "Small steps compound. Every check-in is proof you're building something real.",
+        "The person you're becoming is shaped by what you do today, not tomorrow.",
+        "Progress isn't linear, but your commitment can be. Keep going.",
+        "You don't need motivation to act — action creates motivation.",
+      ];
+      const fallback = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
+      return new Response(JSON.stringify({ quote: fallback }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const data = await response.json();
